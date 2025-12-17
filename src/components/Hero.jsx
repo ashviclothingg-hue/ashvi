@@ -26,13 +26,13 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h2 className="text-ashvi-dark/80 text-lg md:text-xl font-medium tracking-widest mb-2 uppercase">
+                        <h2 className="text-gray-700 text-lg md:text-xl font-semibold tracking-widest mb-2 uppercase">
                             Where Style Meets Comfort
                         </h2>
-                        <h1 className="text-5xl md:text-7xl font-playfair font-bold text-ashvi-dark mb-6 leading-tight">
-                            Trendy Girls Wear <span className="text-ashvi-pink/80">for Every Occasion</span>
+                        <h1 className="text-5xl md:text-7xl font-playfair font-bold text-gray-900 mb-6 leading-tight">
+                            Trendy Girls Wear <span className="text-rose-400">for Every Occasion</span>
                         </h1>
-                        <p className="text-gray-600 text-lg md:text-xl mb-8 leading-relaxed">
+                        <p className="text-gray-800 text-lg md:text-xl mb-8 leading-relaxed font-medium">
                             Discover our exclusive collection of elegant, comfortable, and affordable outfits.
                             Order directly on WhatsApp for a personalized shopping experience.
                         </p>

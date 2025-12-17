@@ -1,9 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
-import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Menu, X, ShoppingBag, User, LogOut } from 'lucide-react';
+import { auth } from '../firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Error logging out:", error);
+        }
+    };
 
     const menuItems = [
         { name: 'Collection', to: 'collection' },
@@ -24,7 +43,7 @@ const Navbar = () => {
                     </div>
 
                     {/* Desktop Menu */}
-                    <div className="hidden md:flex space-x-8">
+                    <div className="hidden md:flex items-center space-x-8">
                         {menuItems.map((item) => (
                             <Link
                                 key={item.name}
@@ -36,6 +55,27 @@ const Navbar = () => {
                                 {item.name}
                             </Link>
                         ))}
+
+                        {user ? (
+                            <div className="flex items-center space-x-4">
+                                <span className="text-ashvi-dark font-medium">Hello, {user.displayName || 'User'}</span>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center space-x-1 text-red-500 hover:text-red-700 transition-colors font-medium border border-red-200 px-3 py-1 rounded-full hover:bg-red-50"
+                                >
+                                    <LogOut size={16} />
+                                    <span className="text-sm">Logout</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <RouterLink
+                                to="/login"
+                                className="flex items-center space-x-1 text-white bg-ashvi-pink hover:bg-ashvi-dark px-4 py-2 rounded-full transition-colors font-medium shadow-md"
+                            >
+                                <User size={18} />
+                                <span>Login</span>
+                            </RouterLink>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -66,6 +106,30 @@ const Navbar = () => {
                                 {item.name}
                             </Link>
                         ))}
+                        {user ? (
+                            <div className="border-t border-gray-200 pt-2 mt-2">
+                                <div className="px-3 py-2 text-base font-medium text-ashvi-dark mb-2">
+                                    Hello, {user.displayName || 'User'}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        handleLogout();
+                                        setIsOpen(false);
+                                    }}
+                                    className="block w-full px-3 py-2 text-base font-medium text-red-500 hover:bg-red-50 rounded-md cursor-pointer"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <RouterLink
+                                to="/login"
+                                onClick={() => setIsOpen(false)}
+                                className="block px-3 py-2 text-base font-medium text-ashvi-pink hover:bg-ashvi-pink/10 rounded-md cursor-pointer"
+                            >
+                                Login / Signup
+                            </RouterLink>
+                        )}
                     </div>
                 </div>
             )}
