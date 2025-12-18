@@ -7,19 +7,33 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 const Collection = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Fetch products real-time
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const productsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setProducts(productsData);
+        try {
+            // Fetch products real-time
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+            const unsubscribe = onSnapshot(q,
+                (snapshot) => {
+                    const productsData = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    setProducts(productsData);
+                    setLoading(false);
+                },
+                (err) => {
+                    console.error("Error fetching products:", err);
+                    setError("Unable to load products. Please refresh the page.");
+                    setLoading(false);
+                }
+            );
+            return () => unsubscribe();
+        } catch (err) {
+            console.error("Error setting up products listener:", err);
+            setError("Unable to connect to database.");
             setLoading(false);
-        });
-        return () => unsubscribe();
+        }
     }, []);
 
     const handleOrder = (productName) => {
@@ -42,6 +56,8 @@ const Collection = () => {
 
                 {loading ? (
                     <div className="text-center text-gray-500">Loading collection...</div>
+                ) : error ? (
+                    <div className="text-center text-red-500">{error}</div>
                 ) : products.length === 0 ? (
                     <div className="text-center text-gray-500">No products added yet.</div>
                 ) : (
