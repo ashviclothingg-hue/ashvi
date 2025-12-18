@@ -8,6 +8,9 @@ const Collection = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activeCategory, setActiveCategory] = useState('All');
+
+    const categories = ['All', 'Kurti', 'Wedding Wear', 'Western Wear', 'Party Wear'];
 
     useEffect(() => {
         try {
@@ -66,46 +69,68 @@ Is this available?`;
                     <div className="text-center text-gray-500">Loading collection...</div>
                 ) : error ? (
                     <div className="text-center text-red-500">{error}</div>
-                ) : products.length === 0 ? (
-                    <div className="text-center text-gray-500">No products added yet.</div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {products.map((product, index) => (
-                            <motion.div
-                                key={product.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ y: -10 }}
-                                className="bg-ashvi-light rounded-2xl overflow-hidden shadow-soft group"
-                            >
-                                <div className="relative h-[450px] overflow-hidden bg-gray-50 flex items-center justify-center">
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                </div>
+                    <>
+                        {/* Categories Filter */}
+                        <div className="flex flex-wrap justify-center gap-4 mb-12">
+                            {categories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`px-6 py-2 rounded-full font-medium transition-all ${activeCategory === cat
+                                            ? 'bg-ashvi-dark text-white shadow-lg'
+                                            : 'bg-ashvi-light text-gray-600 hover:bg-ashvi-pink/20'
+                                        }`}
+                                >
+                                    {cat === 'Wedding Wear' ? 'Wedding Wear (Shadi)' : cat}
+                                </button>
+                            ))}
+                        </div>
 
-                                <div className="p-6">
-                                    <h3 className="font-playfair font-semibold text-lg text-gray-800 mb-2 truncate">
-                                        {product.name}
-                                    </h3>
-                                    <p className="text-rose-500 font-bold text-xl mb-4">
-                                        ₹{product.price}
-                                    </p>
-                                    <button
-                                        onClick={() => handleOrder(product)}
-                                        className="w-full flex items-center justify-center gap-2 bg-ashvi-dark text-white py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow-lg shadow-gray-200"
-                                    >
-                                        <MessageCircle size={18} />
-                                        Order Now
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                        {products.filter(p => activeCategory === 'All' || p.category === activeCategory).length === 0 ? (
+                            <div className="text-center text-gray-500 py-10">No products found in this category.</div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                {products
+                                    .filter(p => activeCategory === 'All' || p.category === activeCategory)
+                                    .map((product, index) => (
+                                        <motion.div
+                                            key={product.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: index * 0.1 }}
+                                            whileHover={{ y: -10 }}
+                                            className="bg-ashvi-light rounded-2xl overflow-hidden shadow-soft group"
+                                        >
+                                            <div className="relative h-[450px] overflow-hidden bg-gray-50 flex items-center justify-center">
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700"
+                                                />
+                                            </div>
+
+                                            <div className="p-6">
+                                                <h3 className="font-playfair font-semibold text-lg text-gray-800 mb-2 truncate">
+                                                    {product.name}
+                                                </h3>
+                                                <p className="text-rose-500 font-bold text-xl mb-4">
+                                                    ₹{product.price}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleOrder(product)}
+                                                    className="w-full flex items-center justify-center gap-2 bg-ashvi-dark text-white py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow-lg shadow-gray-200"
+                                                >
+                                                    <MessageCircle size={18} />
+                                                    Order Now
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </section>

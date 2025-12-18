@@ -16,6 +16,7 @@ const AdminPage = () => {
         name: '',
         price: '',
         details: '',
+        category: 'Kurti',
         image: null
     });
     const [submitting, setSubmitting] = useState(false);
@@ -118,12 +119,13 @@ const AdminPage = () => {
                 name: newItem.name,
                 price: Number(newItem.price),
                 details: newItem.details,
+                category: newItem.category,
                 image: imageUrl,
                 createdAt: new Date().toISOString()
             });
 
             // Reset Form
-            setNewItem({ name: '', price: '', details: '', image: null });
+            setNewItem({ name: '', price: '', details: '', category: 'Kurti', image: null });
             document.getElementById('file-input').value = "";
 
         } catch (err) {
@@ -196,6 +198,21 @@ const AdminPage = () => {
                             />
                         </div>
 
+                        {/* Category selection */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700">Category</label>
+                            <select
+                                value={newItem.category}
+                                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                            >
+                                <option value="Kurti">Kurti</option>
+                                <option value="Wedding Wear">Wedding Wear (Shadi)</option>
+                                <option value="Western Wear">Western Wear</option>
+                                <option value="Party Wear">Party Wear</option>
+                            </select>
+                        </div>
+
                         {/* Image Upload */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700">Product Image</label>
@@ -242,8 +259,11 @@ const AdminPage = () => {
                                     <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
                                 </div>
                                 <div className="p-4">
-                                    <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
-                                    <p className="text-rose-500 font-bold mt-1">₹{product.price}</p>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
+                                        <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-600">{product.category || 'Kurti'}</span>
+                                    </div>
+                                    <p className="text-rose-500 font-bold">₹{product.price}</p>
                                     <button
                                         onClick={() => handleDeleteProduct(product.id, product.image)}
                                         className="mt-4 w-full flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
