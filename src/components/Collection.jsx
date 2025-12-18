@@ -72,11 +72,11 @@ const Collection = () => {
                                 whileHover={{ y: -10 }}
                                 className="bg-ashvi-light rounded-2xl overflow-hidden shadow-soft group"
                             >
-                                <div className="relative h-80 overflow-hidden">
+                                <div className="relative h-[450px] overflow-hidden bg-gray-50 flex items-center justify-center">
                                     <img
                                         src={product.image}
                                         alt={product.name}
-                                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                                        className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700"
                                     />
                                 </div>
 

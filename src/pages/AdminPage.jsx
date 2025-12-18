@@ -238,8 +238,8 @@ const AdminPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {products.map((product) => (
                             <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                                <div className="h-48 overflow-hidden bg-gray-100">
-                                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                <div className="h-64 overflow-hidden bg-gray-50 flex items-center justify-center">
+                                    <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
                                 </div>
                                 <div className="p-4">
                                     <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
