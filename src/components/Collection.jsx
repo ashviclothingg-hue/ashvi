@@ -37,10 +37,13 @@ const Collection = () => {
     }, []);
 
     const handleOrder = (product) => {
-        const message = `Hi, I want to order this dress from ASHVI:
-*Name:* ${product.name}
+        const message = `*NEW ORDER FROM ASHVI* 🛍️
+
+*Product:* ${product.name}
 *Price:* ₹${product.price}
-*Image:* ${product.image}
+
+Click below to see the dress:
+${product.image}
 
 Is this available?`;
         const url = `https://wa.me/917803024406?text=${encodeURIComponent(message)}`;
@@ -94,10 +97,10 @@ Is this available?`;
                                     </p>
                                     <button
                                         onClick={() => handleOrder(product)}
-                                        className="w-full flex items-center justify-center gap-2 bg-white border-2 border-ashvi-pink text-ashvi-dark py-2 px-4 rounded-full hover:bg-ashvi-pink transition-colors font-medium"
+                                        className="w-full flex items-center justify-center gap-2 bg-ashvi-dark text-white py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow-lg shadow-gray-200"
                                     >
                                         <MessageCircle size={18} />
-                                        Order on WhatsApp
+                                        Order Now
                                     </button>
                                 </div>
                             </motion.div>
