@@ -36,8 +36,13 @@ const Collection = () => {
         }
     }, []);
 
-    const handleOrder = (productName) => {
-        const message = `Hi, I want to order this dress from ASHVI: ${productName}`;
+    const handleOrder = (product) => {
+        const message = `Hi, I want to order this dress from ASHVI:
+*Name:* ${product.name}
+*Price:* ₹${product.price}
+*Image:* ${product.image}
+
+Is this available?`;
         const url = `https://wa.me/917803024406?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     };
@@ -88,7 +93,7 @@ const Collection = () => {
                                         ₹{product.price}
                                     </p>
                                     <button
-                                        onClick={() => handleOrder(product.name)}
+                                        onClick={() => handleOrder(product)}
                                         className="w-full flex items-center justify-center gap-2 bg-white border-2 border-ashvi-pink text-ashvi-dark py-2 px-4 rounded-full hover:bg-ashvi-pink transition-colors font-medium"
                                     >
                                         <MessageCircle size={18} />
