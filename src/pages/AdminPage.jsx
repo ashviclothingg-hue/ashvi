@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
-import { Trash2, Plus, Link as LinkIcon, Loader } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Trash2, Plus, Upload, Loader } from 'lucide-react';
 
 const AdminPage = () => {
     const [products, setProducts] = useState([]);
@@ -16,7 +17,7 @@ const AdminPage = () => {
         name: '',
         price: '',
         details: '',
-        image: ''
+        image: null
     });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -79,10 +80,16 @@ const AdminPage = () => {
         );
     }
 
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            setNewItem({ ...newItem, image: e.target.files[0] });
+        }
+    };
+
     const handleAddProduct = async (e) => {
         e.preventDefault();
         if (!newItem.image || !newItem.name || !newItem.price) {
-            setError("Please fill all fields.");
+            setError("Please fill all fields and select an image.");
             return;
         }
 
@@ -90,21 +97,27 @@ const AdminPage = () => {
         setError('');
 
         try {
-            // Add to Firestore (Directly using the URL)
+            // 1. Upload Image to Firebase Storage
+            const imageRef = ref(storage, `products/${Date.now()}-${newItem.image.name}`);
+            await uploadBytes(imageRef, newItem.image);
+            const imageUrl = await getDownloadURL(imageRef);
+
+            // 2. Add to Firestore
             await addDoc(collection(db, "products"), {
                 name: newItem.name,
                 price: Number(newItem.price),
                 details: newItem.details,
-                image: newItem.image,
+                image: imageUrl,
                 createdAt: new Date().toISOString()
             });
 
             // Reset Form
-            setNewItem({ name: '', price: '', details: '', image: '' });
+            setNewItem({ name: '', price: '', details: '', image: null });
+            document.getElementById('file-input').value = "";
 
         } catch (err) {
             console.error("Error adding product:", err);
-            setError("Failed to add product.");
+            setError("Failed to add product. Make sure Firebase Storage is enabled.");
         } finally {
             setSubmitting(false);
         }
@@ -172,17 +185,16 @@ const AdminPage = () => {
                             />
                         </div>
 
-                        {/* Image URL Input */}
+                        {/* Image Upload */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Image Link (URL)</label>
+                            <label className="block text-sm font-medium text-gray-700">Product Image</label>
                             <input
-                                type="url"
-                                value={newItem.image}
-                                onChange={(e) => setNewItem({ ...newItem, image: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="https://example.com/dress.jpg"
+                                id="file-input"
+                                type="file"
+                                onChange={handleImageChange}
+                                accept="image/*"
+                                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Copy image address from anywhere (Instagram/Google) and paste here.</p>
                         </div>
 
                         {/* Submit Button */}
@@ -194,11 +206,11 @@ const AdminPage = () => {
                             >
                                 {submitting ? (
                                     <>
-                                        <Loader className="animate-spin mr-2" size={20} /> Adding...
+                                        <Loader className="animate-spin mr-2" size={20} /> Uploading...
                                     </>
                                 ) : (
                                     <>
-                                        <LinkIcon className="mr-2" size={20} /> Add Product
+                                        <Upload className="mr-2" size={20} /> Add Product
                                     </>
                                 )}
                             </button>
