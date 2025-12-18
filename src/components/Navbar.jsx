@@ -37,8 +37,12 @@ const Navbar = () => {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center cursor-pointer">
-                        <Link to="hero" smooth={true} duration={500} className="text-2xl font-playfair font-bold text-ashvi-dark tracking-wide">
-                            ASHVI
+                        <Link to="hero" smooth={true} duration={500}>
+                            <img
+                                src="/ashvi-logo.png"
+                                alt="ASHVI Logo"
+                                className="h-12 w-auto object-contain"
+                            />
                         </Link>
                     </div>
 
