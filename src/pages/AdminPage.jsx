@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Trash2, Plus, Upload, Loader } from 'lucide-react';
 
 const AdminPage = () => {
@@ -97,12 +96,24 @@ const AdminPage = () => {
         setError('');
 
         try {
-            // 1. Upload Image to Firebase Storage
-            const imageRef = ref(storage, `products/${Date.now()}-${newItem.image.name}`);
-            await uploadBytes(imageRef, newItem.image);
-            const imageUrl = await getDownloadURL(imageRef);
+            // Upload to Cloudinary
+            const formData = new FormData();
+            formData.append('file', newItem.image);
+            formData.append('upload_preset', 'ashvi_products'); // You'll need to create this
+            formData.append('cloud_name', 'ashviclothing'); // Replace with actual cloud name
 
-            // 2. Add to Firestore
+            const response = await fetch(
+                'https://api.cloudinary.com/v1_1/ashviclothing/image/upload',
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+
+            const data = await response.json();
+            const imageUrl = data.secure_url;
+
+            // Add to Firestore
             await addDoc(collection(db, "products"), {
                 name: newItem.name,
                 price: Number(newItem.price),
@@ -117,7 +128,7 @@ const AdminPage = () => {
 
         } catch (err) {
             console.error("Error adding product:", err);
-            setError("Failed to add product. Make sure Firebase Storage is enabled.");
+            setError("Failed to upload image. Please try again.");
         } finally {
             setSubmitting(false);
         }
