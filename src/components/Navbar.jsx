@@ -41,7 +41,7 @@ const Navbar = () => {
                             <img
                                 src="/ashvi-logo.png"
                                 alt="ASHVI Logo"
-                                className="h-12 w-auto object-contain"
+                                className="h-40 w-auto object-contain hover:scale-105 transition-transform duration-300"
                             />
                         </Link>
                     </div>
