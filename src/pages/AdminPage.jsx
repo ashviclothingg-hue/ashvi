@@ -100,10 +100,10 @@ const AdminPage = () => {
             const formData = new FormData();
             formData.append('file', newItem.image);
             formData.append('upload_preset', 'ashvi_products'); // You'll need to create this
-            formData.append('cloud_name', 'ashviclothing'); // Replace with actual cloud name
+            formData.append('cloud_name', 'deydeno8b'); // Replace with actual cloud name
 
             const response = await fetch(
-                'https://api.cloudinary.com/v1_1/ashviclothing/image/upload',
+                'https://api.cloudinary.com/v1_1/deydeno8b/image/upload',
                 {
                     method: 'POST',
                     body: formData
