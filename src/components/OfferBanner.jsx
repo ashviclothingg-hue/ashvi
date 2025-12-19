@@ -20,6 +20,11 @@ const OfferBanner = () => {
 
     if (!banner || !banner.isActive) return null;
 
+    const showText = banner.showText !== false; // Default to true for backward compatibility
+    const showImage = banner.showImage !== false; // Default to true
+
+    if (!showText && !showImage) return null;
+
     return (
         <AnimatePresence>
             <div className="max-w-7xl mx-auto px-4 mt-12 mb-4">
@@ -46,11 +51,13 @@ const OfferBanner = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-grow text-center md:text-left">
-                                <p className="text-gray-900 font-semibold text-lg md:text-xl leading-relaxed">
-                                    {banner.text}
-                                </p>
-                            </div>
+                            {showText && (
+                                <div className="flex-grow text-center md:text-left">
+                                    <p className="text-gray-900 font-semibold text-lg md:text-xl leading-relaxed">
+                                        {banner.text}
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="shrink-0">
                                 <button
@@ -63,7 +70,7 @@ const OfferBanner = () => {
                         </div>
 
                         {/* Banner Image Display */}
-                        {banner.image && (
+                        {showImage && banner.image && (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
