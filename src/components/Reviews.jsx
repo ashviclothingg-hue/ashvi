@@ -38,9 +38,21 @@ const Reviews = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!newReview.name || !newReview.text) {
+        const name = newReview.name.trim();
+        const text = newReview.text.trim();
+
+        if (!name || !text) {
             setError("Please fill in your name and review.");
+            return;
+        }
+
+        if (name.length > 50) {
+            setError("Name must be under 50 characters.");
+            return;
+        }
+
+        if (text.length > 500) {
+            setError("Review must be under 500 characters.");
             return;
         }
 
@@ -171,12 +183,14 @@ const Reviews = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
                                 <input
                                     type="text"
+                                    maxLength={50}
                                     value={newReview.name}
                                     onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
                                     className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-ashvi-pink focus:border-ashvi-pink"
                                     placeholder="Enter your name"
                                     required
                                 />
+                                <p className="text-[10px] text-gray-400 text-right mt-1">{newReview.name.length}/50</p>
                             </div>
 
                             <div>
@@ -203,12 +217,14 @@ const Reviews = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
                                 <textarea
                                     value={newReview.text}
+                                    maxLength={500}
                                     onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
                                     rows={4}
                                     className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-ashvi-pink focus:border-ashvi-pink"
                                     placeholder="Share your experience..."
                                     required
                                 />
+                                <p className="text-[10px] text-gray-400 text-right mt-1">{newReview.text.length}/500</p>
                             </div>
 
                             <div>

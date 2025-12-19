@@ -158,9 +158,22 @@ const AdminPage = () => {
     };
 
     const handleAddProduct = async (e) => {
-        e.preventDefault();
-        if (newItem.images.length === 0 || !newItem.name || !newItem.price) {
-            setError("Please fill all fields and select at least one image.");
+        const name = newItem.name.trim();
+        const price = Number(newItem.price);
+        const details = newItem.details.trim();
+
+        if (newItem.images.length === 0 || !name || isNaN(price) || price <= 0) {
+            setError("Please fill all fields correctly. Price must be greater than 0.");
+            return;
+        }
+
+        if (name.length > 100) {
+            setError("Product name must be under 100 characters.");
+            return;
+        }
+
+        if (details.length > 1000) {
+            setError("Product details must be under 1000 characters.");
             return;
         }
 
@@ -301,11 +314,13 @@ const AdminPage = () => {
                             <label className="block text-sm font-medium text-gray-700">Product Name</label>
                             <input
                                 type="text"
+                                maxLength={100}
                                 value={newItem.name}
                                 onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
                                 placeholder="e.g. Summer Floral Dress"
                             />
+                            <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.name.length}/100</p>
                         </div>
 
                         {/* Price */}
@@ -325,11 +340,13 @@ const AdminPage = () => {
                             <label className="block text-sm font-medium text-gray-700">Product Details</label>
                             <textarea
                                 value={newItem.details}
+                                maxLength={1000}
                                 onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
                                 rows={3}
                                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
                                 placeholder="e.g. Pure Cotton, Dry Clean Only..."
                             />
+                            <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.details.length}/1000</p>
                         </div>
 
                         {/* Category selection */}
