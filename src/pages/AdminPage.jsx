@@ -158,6 +158,7 @@ const AdminPage = () => {
     };
 
     const handleAddProduct = async (e) => {
+        e.preventDefault();
         const name = newItem.name.trim();
         const price = Number(newItem.price);
         const details = newItem.details.trim();

@@ -38,6 +38,7 @@ const Reviews = () => {
     };
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         const name = newReview.name.trim();
         const text = newReview.text.trim();
 
@@ -81,9 +82,9 @@ const Reviews = () => {
             }
 
             await addDoc(collection(db, "reviews"), {
-                name: newReview.name,
+                name: name,
                 rating: newReview.rating,
-                text: newReview.text,
+                text: text,
                 image: imageUrl,
                 createdAt: new Date().toISOString()
             });
@@ -123,11 +124,11 @@ const Reviews = () => {
                 ) : reviews.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">Be the first to review!</div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 pb-6 snap-x snap-mandatory scrollbar-hide">
                         {reviews.map((review) => (
                             <div
                                 key={review.id}
-                                className="bg-white p-6 rounded-2xl shadow-sm border border-ashvi-pink/10 flex flex-col h-full"
+                                className="bg-white p-6 rounded-2xl shadow-sm border border-ashvi-pink/10 flex flex-col h-full min-w-[85%] sm:min-w-[45%] md:min-w-0 snap-center"
                             >
                                 <div className="flex mb-4 text-yellow-400">
                                     {[...Array(5)].map((_, i) => (

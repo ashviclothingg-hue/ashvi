@@ -23,16 +23,17 @@ const ProductCard = ({ product, index, orderSource = "ASHVI" }) => {
     };
 
     const handleOrder = () => {
-        const message = `*NEW ORDER FROM ${orderSource}* 🛍️
+        const message = `*Hello Ashvi Clothing!* ✨
 
-*Product:* ${product.name}
-*Price:* ₹${product.price}
-*Category:* ${product.category}
+I would like to order this beautiful outfit:
 
-Click below to see the dress:
-${images[currentImageIndex]}
+👗 *Product:* ${product.name}
+💰 *Price:* ₹${product.price}
+📁 *Category:* ${product.category}
 
-Is this available?`;
+🔗 *Product Link:* ${images[currentImageIndex]}
+
+*Is this currently available for order?*`;
         const url = `https://wa.me/917803024406?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     };
