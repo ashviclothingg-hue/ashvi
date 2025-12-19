@@ -67,12 +67,12 @@ const OfferBanner = () => {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="mt-6 rounded-xl overflow-hidden shadow-inner border border-gray-100"
+                                className="mt-6 rounded-xl overflow-hidden shadow-inner border border-gray-100 bg-gray-50 flex justify-center items-center"
                             >
                                 <img
                                     src={banner.image}
                                     alt="Special Offer"
-                                    className="w-full h-auto max-h-[300px] object-cover hover:scale-105 transition-transform duration-700"
+                                    className="w-full h-auto max-h-[200px] md:max-h-[250px] object-contain hover:scale-105 transition-transform duration-700"
                                 />
                             </motion.div>
                         )}
