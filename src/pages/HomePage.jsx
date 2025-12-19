@@ -7,6 +7,7 @@ import Features from '../components/Features';
 import HowToOrder from '../components/HowToOrder';
 import Reviews from '../components/Reviews';
 import Footer from '../components/Footer';
+import OfferBanner from '../components/OfferBanner';
 import { MessageCircle } from 'lucide-react';
 
 function HomePage() {
@@ -19,6 +20,7 @@ function HomePage() {
 
             <main>
                 <Hero />
+                <OfferBanner />
                 <Collection />
                 <BabiesCollection />
                 <Features />

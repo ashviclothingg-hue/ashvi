@@ -77,6 +77,12 @@ const Reviews = () => {
                     }
                 );
 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Cloudinary Error:", errorData);
+                    throw new Error(`Image upload failed: ${errorData.error?.message || response.statusText}`);
+                }
+
                 const data = await response.json();
                 imageUrl = data.secure_url;
             }
@@ -94,8 +100,8 @@ const Reviews = () => {
             alert("Thank you for your review!");
 
         } catch (err) {
-            console.error("Error submitting review:", err);
-            setError("Failed to submit review. Please try again.");
+            console.error("Full Error details:", err);
+            setError(err.message || "Failed to submit review. Please try again.");
         } finally {
             setSubmitting(false);
         }

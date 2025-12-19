@@ -12,7 +12,6 @@ import AdminPage from './pages/AdminPage';
 import BabiesPage from './pages/BabiesPage';
 import CollectionPage from './pages/CollectionPage';
 import BabyFitsPage from './pages/BabyFitsPage';
-import OfferBanner from './components/OfferBanner';
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -34,7 +33,6 @@ function App() {
 
   return (
     <Router>
-      <OfferBanner />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <Routes>
         <Route path="/" element={<HomePage />} />

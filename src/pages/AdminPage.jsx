@@ -224,6 +224,12 @@ const AdminPage = () => {
                     }
                 );
 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Cloudinary Error:", errorData);
+                    throw new Error(`Cloudinary upload failed: ${errorData.error?.message || response.statusText}`);
+                }
+
                 const data = await response.json();
                 if (data.secure_url) {
                     imageUrls.push(data.secure_url);
@@ -253,8 +259,8 @@ const AdminPage = () => {
             alert("Product added successfully!");
 
         } catch (err) {
-            console.error("Error adding product:", err);
-            setError("Failed to upload images. Please try again.");
+            console.error("Full Error details:", err);
+            setError(err.message || "Failed to upload. Please check console and Try again.");
         } finally {
             setSubmitting(false);
         }
