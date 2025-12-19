@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { Trash2, Plus, Upload, Loader } from 'lucide-react';
+
+const ADMIN_EMAIL = "ashvi.clothingg@gmail.com";
 
 const AdminPage = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Password Protection State
+    // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [emailInput, setEmailInput] = useState('');
     const [passwordInput, setPasswordInput] = useState('');
+    const [authLoading, setAuthLoading] = useState(true);
 
     // Tab State
     const [activeTab, setActiveTab] = useState('main'); // 'main' or 'baby'
@@ -61,31 +67,69 @@ const AdminPage = () => {
         }
     }, [activeTab]);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (passwordInput === 'ashvi@77') {
-            setIsAuthenticated(true);
-            localStorage.setItem('adminAuth', 'true');
-        } else {
-            alert('Incorrect Password');
+        setError('');
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, emailInput, passwordInput);
+            if (userCredential.user.email !== ADMIN_EMAIL) {
+                await signOut(auth);
+                alert('Access Denied: You are not an authorized admin.');
+            }
+        } catch (err) {
+            console.error("Login Error:", err);
+            alert('Incorrect Email or Password');
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+        } catch (err) {
+            console.error("Logout Error:", err);
         }
     };
 
     useEffect(() => {
-        const isAuth = localStorage.getItem('adminAuth');
-        if (isAuth === 'true') {
-            setIsAuthenticated(true);
-        }
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && user.email === ADMIN_EMAIL) {
+                setIsAuthenticated(true);
+            } else {
+                setIsAuthenticated(false);
+                if (user) signOut(auth); // Sign out if accidentally logged in with wrong id
+            }
+            setAuthLoading(false);
+        });
+        return () => unsubscribe();
     }, []);
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <Loader className="animate-spin text-indigo-600" size={40} />
+            </div>
+        );
+    }
 
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
                     <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Admin Access</h2>
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleLogin} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Enter Admin Password</label>
+                            <label className="block text-sm font-medium text-gray-700">Admin Email</label>
+                            <input
+                                type="email"
+                                value={emailInput}
+                                onChange={(e) => setEmailInput(e.target.value)}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="admin@ashvi.com"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Password</label>
                             <input
                                 type="password"
                                 value={passwordInput}
@@ -96,7 +140,7 @@ const AdminPage = () => {
                         </div>
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
                         >
                             Unlock Dashboard
                         </button>
@@ -130,11 +174,11 @@ const AdminPage = () => {
             for (const image of newItem.images) {
                 const formData = new FormData();
                 formData.append('file', image);
-                formData.append('upload_preset', 'ashvi_products');
-                formData.append('cloud_name', 'deydeno8b');
+                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+                formData.append('cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
                 const response = await fetch(
-                    'https://api.cloudinary.com/v1_1/deydeno8b/image/upload',
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
                     {
                         method: 'POST',
                         body: formData
@@ -207,8 +251,16 @@ const AdminPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                        <button
+                            onClick={handleLogout}
+                            className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition-colors"
+                        >
+                            Logout
+                        </button>
+                    </div>
 
                     {/* Tab Switcher */}
                     <div className="bg-white p-1 rounded-lg border border-gray-200 inline-flex">

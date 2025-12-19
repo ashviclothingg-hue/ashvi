@@ -41,6 +41,14 @@ const Collection = () => {
         }
     }, []);
 
+    const filteredProducts = products.filter(p => {
+        if (activeCategory === 'All') {
+            const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(p.category);
+            return !isBabyProduct;
+        }
+        return p.category === activeCategory;
+    });
+
     return (
         <section id="collection" className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,12 +83,11 @@ const Collection = () => {
                             ))}
                         </div>
 
-                        {products.filter(p => activeCategory === 'All' || p.category === activeCategory).length === 0 ? (
+                        {filteredProducts.length === 0 ? (
                             <div className="text-center text-gray-500 py-10">No products found in this category.</div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                                {products
-                                    .filter(p => activeCategory === 'All' || p.category === activeCategory)
+                                {filteredProducts
                                     .map((product, index) => (
                                         <ProductCard
                                             key={product.id}

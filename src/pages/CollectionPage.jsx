@@ -52,9 +52,13 @@ const CollectionPage = () => {
         }
     }, []);
 
-    const displayedProducts = activeCategory === 'All'
-        ? products
-        : products.filter(p => p.category === activeCategory);
+    const displayedProducts = products.filter(p => {
+        if (activeCategory === 'All') {
+            const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(p.category);
+            return !isBabyProduct;
+        }
+        return p.category === activeCategory;
+    });
 
     return (
         <div className="min-h-screen bg-white">

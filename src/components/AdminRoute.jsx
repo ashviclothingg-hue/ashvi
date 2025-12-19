@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const ADMIN_EMAIL = "rithamchhabra@gmail.com";
+const ADMIN_EMAIL = "ashvi.clothingg@gmail.com";
 
 const AdminRoute = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -21,7 +21,7 @@ const AdminRoute = ({ children }) => {
         return <div className="text-center py-20">Loading...</div>;
     }
 
-    if (!user) {
+    if (!user || user.email !== ADMIN_EMAIL) {
         return <Navigate to="/" replace />;
     }
 
