@@ -32,7 +32,8 @@ const AdminPage = () => {
     const [error, setError] = useState('');
 
     const [reviews, setReviews] = useState([]);
-    const [banner, setBanner] = useState({ isActive: false, text: '' });
+    const [banner, setBanner] = useState({ isActive: false, text: '', image: '' });
+    const [bannerImageFile, setBannerImageFile] = useState(null);
     const [bannerSaving, setBannerSaving] = useState(false);
 
     // Fetch Products & Reviews
@@ -118,7 +119,34 @@ const AdminPage = () => {
         e.preventDefault();
         setBannerSaving(true);
         try {
-            await setDoc(doc(db, "settings", "banner"), banner);
+            let finalBanner = { ...banner };
+
+            // Upload banner image if a new one is selected
+            if (bannerImageFile) {
+                const formData = new FormData();
+                formData.append('file', bannerImageFile);
+                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+                formData.append('cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Banner image upload failed");
+                }
+
+                const data = await response.json();
+                finalBanner.image = data.secure_url;
+            }
+
+            await setDoc(doc(db, "settings", "banner"), finalBanner);
+            setBanner(finalBanner);
+            setBannerImageFile(null);
             alert("Banner updated successfully!");
         } catch (err) {
             console.error("Error updating banner:", err);
@@ -464,23 +492,40 @@ const AdminPage = () => {
                                 <span className="ml-3 text-sm font-medium text-gray-700">Banner On/Off</span>
                             </label>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
-                            <input
-                                type="text"
-                                value={banner.text}
-                                onChange={(e) => setBanner({ ...banner, text: e.target.value })}
-                                className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. Special Offer: 20% OFF on all items!"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
+                                <input
+                                    type="text"
+                                    value={banner.text}
+                                    onChange={(e) => setBanner({ ...banner, text: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="e.g. Special Offer: 20% OFF on all items!"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image (Optional)</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => setBannerImageFile(e.target.files[0])}
+                                    accept="image/*"
+                                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                />
+                            </div>
                         </div>
+                        {banner.image && !bannerImageFile && (
+                            <div className="mt-2">
+                                <p className="text-xs text-gray-500 mb-1">Current Image Preview:</p>
+                                <img src={banner.image} alt="Current Banner" className="h-20 rounded-md border border-gray-200" />
+                            </div>
+                        )}
                         <button
                             type="submit"
                             disabled={bannerSaving}
                             className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:bg-gray-400"
                         >
                             {bannerSaving ? <Loader className="animate-spin" size={18} /> : null}
-                            Update Banner
+                            Update Banner Settings
                         </button>
                     </form>
                 </div>
