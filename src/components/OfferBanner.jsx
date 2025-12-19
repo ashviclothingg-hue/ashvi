@@ -29,30 +29,26 @@ const OfferBanner = () => {
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
                     whileHover={{ y: -5 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="relative p-[2px] rounded-2xl bg-gradient-to-r from-ashvi-pink via-ashvi-dark to-ashvi-pink shadow-xl overflow-hidden group"
+                    className="relative p-[2px] rounded-2xl bg-gradient-to-r from-ashvi-pink via-rose-400 to-ashvi-pink shadow-xl overflow-hidden group"
                 >
-                    <div className="bg-white rounded-[14px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 transition-colors group-hover:bg-ashvi-light/30">
+                    <div className="bg-white rounded-[14px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 transition-colors group-hover:bg-ashvi-pink/5">
                         {/* Decorative background elements */}
-                        <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-ashvi-pink/10 rounded-full blur-3xl" />
-                        <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-ashvi-dark/5 rounded-full blur-3xl" />
+                        <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-ashvi-pink/20 rounded-full blur-3xl opacity-50" />
+                        <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-indigo-50 rounded-full blur-3xl opacity-50" />
 
                         <div className="flex items-center gap-4 text-ashvi-dark shrink-0">
                             <div className="bg-ashvi-pink/20 p-3 rounded-xl">
-                                <Sparkles className="text-ashvi-pink animate-pulse" size={32} />
+                                <Sparkles className="text-ashvi-pink" size={32} />
                             </div>
                             <div>
-                                <h3 className="font-playfair font-bold text-xl md:text-2xl">Special Announcement</h3>
+                                <h3 className="font-playfair font-bold text-xl md:text-2xl text-ashvi-dark">Offer Alert!</h3>
                             </div>
                         </div>
 
                         <div className="flex-grow text-center md:text-left">
-                            <motion.p
-                                animate={{ opacity: [0.7, 1, 0.7] }}
-                                transition={{ duration: 2.5, repeat: Infinity }}
-                                className="text-gray-700 font-medium text-lg md:text-xl leading-relaxed"
-                            >
+                            <p className="text-gray-900 font-semibold text-lg md:text-xl leading-relaxed">
                                 {banner.text}
-                            </motion.p>
+                            </p>
                         </div>
 
                         <div className="shrink-0">
