@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { Trash2, Plus, Upload, Loader } from 'lucide-react';
 
@@ -32,6 +32,8 @@ const AdminPage = () => {
     const [error, setError] = useState('');
 
     const [reviews, setReviews] = useState([]);
+    const [banner, setBanner] = useState({ isActive: false, text: '' });
+    const [bannerSaving, setBannerSaving] = useState(false);
 
     // Fetch Products & Reviews
     useEffect(() => {
@@ -102,6 +104,29 @@ const AdminPage = () => {
         });
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = onSnapshot(doc(db, "settings", "banner"), (docSnap) => {
+            if (docSnap.exists()) {
+                setBanner(docSnap.data());
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const handleUpdateBanner = async (e) => {
+        e.preventDefault();
+        setBannerSaving(true);
+        try {
+            await setDoc(doc(db, "settings", "banner"), banner);
+            alert("Banner updated successfully!");
+        } catch (err) {
+            console.error("Error updating banner:", err);
+            alert("Failed to update banner.");
+        } finally {
+            setBannerSaving(false);
+        }
+    };
 
     if (authLoading) {
         return (
@@ -414,6 +439,43 @@ const AdminPage = () => {
                                 )}
                             </button>
                         </div>
+                    </form>
+                </div>
+
+                {/* Banner Management */}
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Manage Offer Banner</h2>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
+                    <form onSubmit={handleUpdateBanner} className="space-y-4">
+                        <div className="flex items-center gap-4">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={banner.isActive}
+                                    onChange={(e) => setBanner({ ...banner, isActive: e.target.checked })}
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                <span className="ml-3 text-sm font-medium text-gray-700">Banner On/Off</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
+                            <input
+                                type="text"
+                                value={banner.text}
+                                onChange={(e) => setBanner({ ...banner, text: e.target.value })}
+                                className="w-full border border-gray-300 rounded-md p-2.5 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. Special Offer: 20% OFF on all items!"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={bannerSaving}
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:bg-gray-400"
+                        >
+                            {bannerSaving ? <Loader className="animate-spin" size={18} /> : null}
+                            Update Banner
+                        </button>
                     </form>
                 </div>
 
