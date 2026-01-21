@@ -8,12 +8,13 @@ export default {
     extend: {
       colors: {
         ashvi: {
-          pink: '#FFD1DC',    // Blush Pink
-          lavender: '#E6E6FA', // Lavender
+          pink: '#BE185D',    // Vibrant Rose (Accent) - Visible text/buttons
+          soft: '#FCE7F3',     // Light Pink Tint (Backgrounds)
+          lavender: '#FAE8FF', // Soft Purple
           peach: '#FFDAB9',    // Peach
           cream: '#FFFDD0',    // Cream
-          dark: '#4A4A4A',     // Dark Gray for text
-          light: '#F9F9F9',    // Off-white background
+          dark: '#831843',     // Deep Wine/Magenta (Logo Main Color)
+          light: '#FFF1F2',    // Very Light Rose background
         }
       },
       fontFamily: {

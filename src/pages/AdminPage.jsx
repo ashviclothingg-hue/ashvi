@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Trash2, Plus, Upload, Loader } from 'lucide-react';
+import { Trash2, Plus, Upload, Loader, X } from 'lucide-react';
+import ImageCropper from '../components/ImageCropper';
+import ProductCard from '../components/ProductCard';
 
 const ADMIN_EMAIL = "ashvi.clothingg@gmail.com";
 
@@ -18,7 +20,7 @@ const AdminPage = () => {
     const [authLoading, setAuthLoading] = useState(true);
 
     // Tab State
-    const [activeTab, setActiveTab] = useState('main'); // 'main' or 'baby'
+    const [activeTab, setActiveTab] = useState('main'); // 'main', 'baby', 'fabric'
 
     // Form State
     const [newItem, setNewItem] = useState({
@@ -26,12 +28,14 @@ const AdminPage = () => {
         price: '',
         details: '',
         category: 'Short Kurtis',
+        unit: 'meter',
         images: []
     });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
     const [reviews, setReviews] = useState([]);
+    const [fabrics, setFabrics] = useState([]);
     const [banner, setBanner] = useState({
         isActive: false,
         showText: true,
@@ -42,8 +46,55 @@ const AdminPage = () => {
     const [bannerImageFile, setBannerImageFile] = useState(null);
     const [bannerSaving, setBannerSaving] = useState(false);
 
+    // Cropper State
+    const [showCropper, setShowCropper] = useState(false);
+    const [croppingImage, setCroppingImage] = useState(null);
+    const [currentFile, setCurrentFile] = useState(null);
+
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setCurrentFile(file);
+            setCroppingImage(URL.createObjectURL(file));
+            setShowCropper(true);
+            // Clear input so same file can be selected again if needed
+            e.target.value = '';
+        }
+    };
+
+    const handleCropComplete = (croppedBlob) => {
+        // Create a File from the Blob
+        const croppedFile = new File([croppedBlob], currentFile.name, { type: "image/jpeg" });
+
+        // Add to images array (limit to 5)
+        if (newItem.images.length < 5) {
+            setNewItem(prev => ({ ...prev, images: [...prev.images, croppedFile] }));
+        } else {
+            alert("Maximum 5 images allowed");
+        }
+
+        setShowCropper(false);
+        setCroppingImage(null);
+        setCurrentFile(null);
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setCroppingImage(null);
+        setCurrentFile(null);
+    };
+
+    const removeImage = (index) => {
+        setNewItem(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index)
+        }));
+    };
+
     // Fetch Products & Reviews
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         const unsubscribeProducts = onSnapshot(collection(db, "products"), (snapshot) => {
             const productsData = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -61,18 +112,29 @@ const AdminPage = () => {
             setReviews(reviewsData);
         });
 
+        const unsubscribeFabrics = onSnapshot(collection(db, "fabrics"), (snapshot) => {
+            const fabricsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setFabrics(fabricsData);
+        });
+
         return () => {
             unsubscribeProducts();
             unsubscribeReviews();
+            unsubscribeFabrics();
         };
-    }, []);
+    }, [isAuthenticated]);
 
     // Update default category when tab changes
     useEffect(() => {
         if (activeTab === 'main') {
             setNewItem(prev => ({ ...prev, category: 'Short Kurtis' }));
-        } else {
+        } else if (activeTab === 'baby') {
             setNewItem(prev => ({ ...prev, category: 'Babies Casual' }));
+        } else {
+            setNewItem(prev => ({ ...prev, category: 'Fabric' }));
         }
     }, [activeTab]);
 
@@ -209,12 +271,7 @@ const AdminPage = () => {
         );
     }
 
-    const handleImageChange = (e) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files).slice(0, 5); // Limit to 5 images
-            setNewItem({ ...newItem, images: filesArray });
-        }
-    };
+
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
@@ -270,12 +327,15 @@ const AdminPage = () => {
                 }
             }
 
-            // Add to Firestore
-            await addDoc(collection(db, "products"), {
+            // Add to Firestore based on Tab
+            const collectionName = activeTab === 'fabric' ? 'fabrics' : 'products';
+
+            await addDoc(collection(db, collectionName), {
                 name: newItem.name,
                 price: Number(newItem.price),
                 details: newItem.details,
                 category: newItem.category,
+                unit: newItem.unit || 'meter',
                 image: imageUrls[0], // Keep primary image for backward compatibility
                 images: imageUrls, // Array of all images
                 createdAt: new Date().toISOString()
@@ -300,14 +360,14 @@ const AdminPage = () => {
         }
     };
 
-    const handleDeleteProduct = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this product?")) return;
+    const handleDeleteProduct = async (id, collectionName = 'products') => {
+        if (!window.confirm("Are you sure you want to delete this item?")) return;
 
         try {
-            await deleteDoc(doc(db, "products", id));
+            await deleteDoc(doc(db, collectionName, id));
         } catch (err) {
-            console.error("Error deleting product:", err);
-            alert("Failed to delete product.");
+            console.error("Error deleting item:", err);
+            alert("Failed to delete item.");
         }
     };
 
@@ -322,10 +382,17 @@ const AdminPage = () => {
     };
 
     // Filter products based on active tab
-    const filteredProducts = products.filter(product => {
-        const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(product.category);
-        return activeTab === 'baby' ? isBabyProduct : !isBabyProduct;
-    });
+    // For products, we filter by category. For fabrics, we just use the fabrics array.
+    const getDisplayItems = () => {
+        if (activeTab === 'fabric') return fabrics;
+
+        return products.filter(product => {
+            const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(product.category);
+            return activeTab === 'baby' ? isBabyProduct : !isBabyProduct;
+        });
+    };
+
+    const displayItems = getDisplayItems();
 
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
@@ -361,125 +428,278 @@ const AdminPage = () => {
                         >
                             Baby Fits
                         </button>
+                        <button
+                            onClick={() => setActiveTab('fabric')}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'fabric'
+                                ? 'bg-amber-500 text-white shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            Fabrics
+                        </button>
                     </div>
                 </div>
 
-                {/* Add Product Form */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-10 border-t-4 border-t-indigo-500">
-                    <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                        <Plus size={24} className="text-indigo-600" />
-                        Add New {activeTab === 'main' ? 'Collection' : 'Baby'} Product
-                    </h2>
+                {/* Cropper Modal */}
+                {showCropper && (
+                    <ImageCropper
+                        imageSrc={croppingImage}
+                        onCropComplete={handleCropComplete}
+                        onCancel={handleCropCancel}
+                    />
+                )}
 
-                    {error && <p className="text-red-500 mb-4">{error}</p>}
+                {/* Main Content Grid: Form (Left) & Preview (Right) */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
 
-                    <form onSubmit={handleAddProduct} className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+                    {/* Form Section */}
+                    <div className={`lg:col-span-2 bg-white rounded-xl shadow-md p-6 border-t-4 ${activeTab === 'main' ? 'border-t-indigo-500' : activeTab === 'baby' ? 'border-t-rose-500' : 'border-t-amber-500'
+                        }`}>
+                        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                            <Plus size={24} className={activeTab === 'main' ? 'text-indigo-600' : activeTab === 'baby' ? 'text-rose-500' : 'text-amber-500'} />
+                            Add New {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby' : 'Fabric'} Product
+                        </h2>
 
-                        {/* Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input
-                                type="text"
-                                maxLength={100}
-                                value={newItem.name}
-                                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. Summer Floral Dress"
-                            />
-                            <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.name.length}/100</p>
-                        </div>
+                        {error && <p className="text-red-500 mb-4">{error}</p>}
 
-                        {/* Price */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
-                            <input
-                                type="number"
-                                value={newItem.price}
-                                onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="1299"
-                            />
-                        </div>
+                        <form onSubmit={handleAddProduct} className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
 
-                        {/* Details */}
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Product Details</label>
-                            <textarea
-                                value={newItem.details}
-                                maxLength={1000}
-                                onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
-                                rows={3}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. Pure Cotton, Dry Clean Only..."
-                            />
-                            <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.details.length}/1000</p>
-                        </div>
+                            {/* Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Product Name</label>
+                                <input
+                                    type="text"
+                                    maxLength={100}
+                                    value={newItem.name}
+                                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="e.g. Summer Floral Dress"
+                                />
+                                <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.name.length}/100</p>
+                            </div>
 
-                        {/* Category selection */}
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Category</label>
-                            <select
-                                value={newItem.category}
-                                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                            >
-                                {activeTab === 'main' ? (
-                                    <>
-                                        <option value="Short Kurtis">Short Kurtis</option>
-                                        <option value="Long Kurtis">Long Kurtis</option>
-                                        <option value="Suit Sets">Suit Sets</option>
-                                        <option value="Anarkali Sets">Anarkali Sets</option>
-                                        <option value="Co-ord Sets">Co-ord Sets</option>
-                                        <option value="One Piece Dress">One Piece Dress</option>
-                                        <option value="Festive Fits">Festive Fits</option>
-                                    </>
-                                ) : (
-                                    <>
-                                        <option value="Babies Casual">Babies Casual</option>
-                                        <option value="Babies Ethnic">Babies Ethnic</option>
-                                    </>
+                            {/* Price */}
+                            {/* Price & Unit */}
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={newItem.price}
+                                        onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="1299"
+                                    />
+                                </div>
+                                {activeTab === 'fabric' && (
+                                    <div className="w-1/3">
+                                        <label className="block text-sm font-medium text-gray-700">Unit</label>
+                                        <div className="flex flex-col gap-2">
+                                            <select
+                                                value={['meter', 'cm'].includes(newItem.unit) ? newItem.unit : 'custom'}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'custom') {
+                                                        setNewItem({ ...newItem, unit: '' });
+                                                    } else {
+                                                        setNewItem({ ...newItem, unit: val });
+                                                    }
+                                                }}
+                                                className="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                            >
+                                                <option value="meter">/ meter</option>
+                                                <option value="cm">/ cm</option>
+                                                <option value="custom">Other (Manual)</option>
+                                            </select>
+                                            {!['meter', 'cm'].includes(newItem.unit) && (
+                                                <input
+                                                    type="text"
+                                                    value={newItem.unit}
+                                                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                                                    placeholder="e.g. yard, piece"
+                                                    className="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
                                 )}
-                            </select>
-                        </div>
+                            </div>
 
-                        {/* Image Upload */}
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700">Product Images (Max 5)</label>
-                            <input
-                                id="file-input"
-                                type="file"
-                                onChange={handleImageChange}
-                                accept="image/*"
-                                multiple
-                                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                            />
-                            <p className="mt-1 text-xs text-gray-500">
-                                {newItem.images.length > 0 ? `${newItem.images.length} file(s) selected` : "Hold Ctrl/Cmd to select multiple"}
+                            {/* Details */}
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Product Details</label>
+                                <textarea
+                                    value={newItem.details}
+                                    maxLength={1000}
+                                    onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
+                                    rows={3}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="e.g. Pure Cotton, Dry Clean Only..."
+                                />
+                                <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.details.length}/1000</p>
+                            </div>
+
+                            {/* Category selection */}
+                            {activeTab !== 'fabric' && (
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                                    <div className="flex flex-col gap-2">
+                                        <select
+                                            value={[
+                                                // Main Collection
+                                                'Short Kurtis', 'Long Kurtis', 'Suit Sets', 'Anarkali Sets',
+                                                'Co-ord Sets', 'One Piece Dress', 'Festive Fits',
+                                                // Baby Fits
+                                                'Babies Casual', 'Babies Ethnic'
+                                            ].includes(newItem.category) ? newItem.category : 'custom'}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === 'custom') {
+                                                    setNewItem({ ...newItem, category: '' });
+                                                } else {
+                                                    setNewItem({ ...newItem, category: val });
+                                                }
+                                            }}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                        >
+                                            {activeTab === 'main' ? (
+                                                <>
+                                                    <option value="Short Kurtis">Short Kurtis</option>
+                                                    <option value="Long Kurtis">Long Kurtis</option>
+                                                    <option value="Suit Sets">Suit Sets</option>
+                                                    <option value="Anarkali Sets">Anarkali Sets</option>
+                                                    <option value="Co-ord Sets">Co-ord Sets</option>
+                                                    <option value="One Piece Dress">One Piece Dress</option>
+                                                    <option value="Festive Fits">Festive Fits</option>
+                                                    <option value="custom">Other (Manual)</option>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <option value="Babies Casual">Babies Casual</option>
+                                                    <option value="Babies Ethnic">Babies Ethnic</option>
+                                                    <option value="custom">Other (Manual)</option>
+                                                </>
+                                            )}
+                                        </select>
+
+                                        {/* Manual Category Input */}
+                                        {![
+                                            'Short Kurtis', 'Long Kurtis', 'Suit Sets', 'Anarkali Sets',
+                                            'Co-ord Sets', 'One Piece Dress', 'Festive Fits',
+                                            'Babies Casual', 'Babies Ethnic'
+                                        ].includes(newItem.category) && (
+                                                <input
+                                                    type="text"
+                                                    value={newItem.category}
+                                                    onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                                                    placeholder="Enter custom category name"
+                                                    className="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                />
+                                            )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Image Upload & Preview */}
+                            <div className="md:col-span-2 space-y-4">
+                                <label className="block text-sm font-medium text-gray-700">Product Images (Max 5)</label>
+
+                                {/* Upload Button */}
+                                <div className="flex items-center gap-4">
+                                    <label className="cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-md shadow-sm inline-flex items-center transition-colors">
+                                        <Upload size={18} className="mr-2" />
+                                        Choose Image to Crop & Add
+                                        <input
+                                            id="file-input"
+                                            type="file"
+                                            onChange={handleImageChange}
+                                            accept="image/*"
+                                            className="hidden"
+                                            disabled={newItem.images.length >= 5}
+                                        />
+                                    </label>
+                                    <span className="text-xs text-gray-500">
+                                        {5 - newItem.images.length} slots remaining
+                                    </span>
+                                </div>
+
+                                {/* Selected Images List */}
+                                {newItem.images.length > 0 && (
+                                    <div className="flex flex-wrap gap-4 mt-2">
+                                        {newItem.images.map((img, index) => (
+                                            <div key={index} className="relative group w-24 h-32 border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                                                <img
+                                                    src={URL.createObjectURL(img)}
+                                                    alt={`Preview ${index}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(index)}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="md:col-span-2">
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:bg-gray-400 ${activeTab === 'main'
+                                        ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                                        : activeTab === 'baby'
+                                            ? 'bg-rose-500 hover:bg-rose-600 focus:ring-rose-500'
+                                            : 'bg-amber-500 hover:bg-amber-600 focus:ring-amber-500'
+                                        }`}
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader className="animate-spin mr-2" size={20} /> Uploading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="mr-2" size={20} /> Add to {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Live Preview Section */}
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-24">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                                Live Preview
+                            </h2>
+                            <div className="transform scale-90 origin-top">
+                                <ProductCard
+                                    product={{
+                                        ...newItem,
+                                        price: newItem.price || '0',
+                                        // Create preview URLs for the images
+                                        images: newItem.images.length > 0
+                                            ? newItem.images.map(file => URL.createObjectURL(file))
+                                            : ['https://placehold.co/400x500?text=Product+Preview']
+                                    }}
+                                    index={0}
+                                />
+                            </div>
+                            <p className="text-sm text-gray-500 text-center mt-4">
+                                This is how your product will appear on the website.
                             </p>
                         </div>
-
-                        {/* Submit Button */}
-                        <div className="md:col-span-2">
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:bg-gray-400 ${activeTab === 'main'
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
-                                    : 'bg-rose-500 hover:bg-rose-600 focus:ring-rose-500'
-                                    }`}
-                            >
-                                {submitting ? (
-                                    <>
-                                        <Loader className="animate-spin mr-2" size={20} /> Uploading...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Upload className="mr-2" size={20} /> Add to {activeTab === 'main' ? 'Collection' : 'Baby Fits'}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
                 {/* Banner Management */}
@@ -558,16 +778,15 @@ const AdminPage = () => {
                     </form>
                 </div>
 
-                {/* Product List */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    {activeTab === 'main' ? 'Main Collection' : 'Baby Fits'} Inventory ({filteredProducts.length})
+                    {activeTab === 'main' ? 'Main Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'} Inventory ({displayItems.length})
                 </h2>
 
                 {loading ? (
-                    <div className="text-center py-10">Loading products...</div>
+                    <div className="text-center py-10">Loading items...</div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {filteredProducts.map((product) => (
+                        {displayItems.map((product) => (
                             <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
                                 <div className="h-64 overflow-hidden bg-gray-50 flex items-center justify-center">
                                     <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
@@ -579,7 +798,7 @@ const AdminPage = () => {
                                     </div>
                                     <p className="text-rose-500 font-bold">₹{product.price}</p>
                                     <button
-                                        onClick={() => handleDeleteProduct(product.id, product.image)}
+                                        onClick={() => handleDeleteProduct(product.id, activeTab === 'fabric' ? 'fabrics' : 'products')}
                                         className="mt-4 w-full flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
                                     >
                                         <Trash2 size={18} className="mr-2" /> Delete
@@ -587,9 +806,9 @@ const AdminPage = () => {
                                 </div>
                             </div>
                         ))}
-                        {filteredProducts.length === 0 && (
+                        {displayItems.length === 0 && (
                             <div className="col-span-full text-center py-10 text-gray-500">
-                                No products found in this section.
+                                No items found in this section.
                             </div>
                         )}
                     </div>

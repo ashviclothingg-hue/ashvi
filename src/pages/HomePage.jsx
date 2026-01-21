@@ -3,6 +3,8 @@ import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Collection from '../components/Collection';
 import BabiesCollection from '../components/BabiesCollection';
+import CustomOrder from '../components/CustomOrder';
+import FabricsCollection from '../components/FabricsCollection';
 import Features from '../components/Features';
 import HowToOrder from '../components/HowToOrder';
 import Reviews from '../components/Reviews';
@@ -23,6 +25,8 @@ function HomePage() {
                 <OfferBanner />
                 <Collection />
                 <BabiesCollection />
+                <FabricsCollection />
+                <CustomOrder />
                 <Features />
                 <HowToOrder />
                 <Reviews />

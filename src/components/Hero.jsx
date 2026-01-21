@@ -1,11 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 const Hero = () => {
-    const whatsappNumber = "917803024406";
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hi%20I%20want%20to%20order%20from%20ASHVI`;
-
     return (
         <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-ashvi-light">
             {/* Background Image with Overlay */}
@@ -34,20 +32,15 @@ const Hero = () => {
                         </h1>
                         <p className="text-gray-800 text-lg md:text-xl mb-8 leading-relaxed font-medium">
                             Discover our exclusive collection of elegant, comfortable, and affordable outfits.
-                            Order directly on WhatsApp for a personalized shopping experience.
                         </p>
 
-                        <motion.a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="inline-flex items-center px-8 py-4 bg-ashvi-pink text-ashvi-dark font-medium rounded-full shadow-lg hover:shadow-xl hover:bg-ashvi-pink/90 transition-all text-lg"
+                        <Link
+                            to="/collection"
+                            className="inline-flex items-center px-8 py-4 bg-ashvi-pink text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:bg-ashvi-pink/90 transition-all text-lg transform hover:scale-105 active:scale-95 duration-200"
                         >
-                            Order on WhatsApp
+                            Shop Now
                             <ArrowRight className="ml-2 w-5 h-5" />
-                        </motion.a>
+                        </Link>
                     </motion.div>
                 </div>
             </div>
