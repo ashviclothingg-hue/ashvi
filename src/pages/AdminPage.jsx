@@ -29,6 +29,7 @@ const AdminPage = () => {
         details: '',
         category: 'Short Kurtis',
         unit: 'meter',
+        specialOffer: false,
         images: []
     });
     const [submitting, setSubmitting] = useState(false);
@@ -279,8 +280,14 @@ const AdminPage = () => {
         const price = Number(newItem.price);
         const details = newItem.details.trim();
 
-        if (newItem.images.length === 0 || !name || isNaN(price) || price <= 0) {
-            setError("Please fill all fields correctly. Price must be greater than 0.");
+        const isFabric = activeTab === 'fabric';
+
+        // Validation: Price must be > 0 (unless it's a fabric, where we allow 0/empty)
+        if (newItem.images.length === 0 || !name || isNaN(price) || (price <= 0 && !isFabric)) {
+            setError(isFabric
+                ? "Please fill all fields. Add at least one image and a name."
+                : "Please fill all fields correctly. Price must be greater than 0."
+            );
             return;
         }
 
@@ -330,23 +337,36 @@ const AdminPage = () => {
             // Add to Firestore based on Tab
             const collectionName = activeTab === 'fabric' ? 'fabrics' : 'products';
 
-            await addDoc(collection(db, collectionName), {
+            const payload = {
                 name: newItem.name,
-                price: Number(newItem.price),
+                price: Number(newItem.price), // This is MRP if special offer
                 details: newItem.details,
-                category: newItem.category,
+                category: activeTab === 'fabric' ? 'Fabric' : newItem.category,
                 unit: newItem.unit || 'meter',
+                isSpecialOffer: newItem.specialOffer || false,
                 image: imageUrls[0], // Keep primary image for backward compatibility
                 images: imageUrls, // Array of all images
                 createdAt: new Date().toISOString()
-            });
+            };
+
+            if (newItem.specialOffer && newItem.discountPrice) {
+                payload.discountPrice = Number(newItem.discountPrice);
+            }
+
+            await addDoc(collection(db, collectionName), payload);
 
             // Reset Form (maintain current tab category default)
+            let defaultCategory = 'Short Kurtis';
+            if (activeTab === 'baby') defaultCategory = 'Babies Casual';
+            if (activeTab === 'fabric') defaultCategory = 'Fabric';
+
             setNewItem({
                 name: '',
                 price: '',
                 details: '',
-                category: activeTab === 'main' ? 'Short Kurtis' : 'Babies Casual',
+                category: defaultCategory,
+                specialOffer: false,
+                discountPrice: '',
                 images: []
             });
             document.getElementById('file-input').value = "";
@@ -478,55 +498,51 @@ const AdminPage = () => {
                                 <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.name.length}/100</p>
                             </div>
 
-                            {/* Price */}
-                            {/* Price & Unit */}
-                            <div className="flex gap-4">
-                                <div className="flex-1">
-                                    <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
-                                    <input
-                                        type="number"
-                                        value={newItem.price}
-                                        onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                        placeholder="1299"
-                                    />
-                                </div>
-                                {activeTab === 'fabric' && (
-                                    <div className="w-1/3">
-                                        <label className="block text-sm font-medium text-gray-700">Unit</label>
-                                        <div className="flex flex-col gap-2">
-                                            <select
-                                                value={['meter', 'cm'].includes(newItem.unit) ? newItem.unit : 'custom'}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    if (val === 'custom') {
-                                                        setNewItem({ ...newItem, unit: '' });
-                                                    } else {
-                                                        setNewItem({ ...newItem, unit: val });
-                                                    }
-                                                }}
-                                                className="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                                            >
-                                                <option value="meter">/ meter</option>
-                                                <option value="cm">/ cm</option>
-                                                <option value="custom">Other (Manual)</option>
-                                            </select>
-                                            {!['meter', 'cm'].includes(newItem.unit) && (
+                            {/* Price and Special Offer */}
+                            {activeTab !== 'fabric' && (
+                                <div className="space-y-4">
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
+                                            <input
+                                                type="number"
+                                                value={newItem.price}
+                                                onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                                placeholder={newItem.specialOffer ? "Original Price (MRP)" : "Selling Price"}
+                                            />
+                                        </div>
+                                        <div className="flex items-center pt-6">
+                                            <label className="flex items-center cursor-pointer gap-2">
                                                 <input
-                                                    type="text"
-                                                    value={newItem.unit}
-                                                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
-                                                    placeholder="e.g. yard, piece"
-                                                    className="block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                    type="checkbox"
+                                                    checked={newItem.specialOffer || false}
+                                                    onChange={(e) => setNewItem({ ...newItem, specialOffer: e.target.checked })}
+                                                    className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
                                                 />
-                                            )}
+                                                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Special Offer?</span>
+                                            </label>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+
+                                    {newItem.specialOffer && (
+                                        <div className="animate-fade-in bg-rose-50 p-4 rounded-lg border border-rose-100">
+                                            <label className="block text-sm font-bold text-rose-700 mb-1">Discount Price (₹)</label>
+                                            <input
+                                                type="number"
+                                                value={newItem.discountPrice || ''}
+                                                onChange={(e) => setNewItem({ ...newItem, discountPrice: e.target.value })}
+                                                className="block w-full border border-rose-300 rounded-md shadow-sm p-3 focus:ring-rose-500 focus:border-rose-500 bg-white"
+                                                placeholder="Enter Deal Price"
+                                            />
+                                            <p className="text-xs text-rose-500 mt-1">This will be the main selling price.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Details */}
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-2 mt-4">
                                 <label className="block text-sm font-medium text-gray-700">Product Details</label>
                                 <textarea
                                     value={newItem.details}
@@ -785,7 +801,7 @@ const AdminPage = () => {
                 {loading ? (
                     <div className="text-center py-10">Loading items...</div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 gap-y-6 md:gap-6">
                         {displayItems.map((product) => (
                             <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
                                 <div className="h-64 overflow-hidden bg-gray-50 flex items-center justify-center">

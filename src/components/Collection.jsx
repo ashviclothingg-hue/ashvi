@@ -86,7 +86,7 @@ const Collection = () => {
                         {filteredProducts.length === 0 ? (
                             <div className="text-center text-gray-500 py-10">No products found in this category.</div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 gap-y-6 md:gap-8">
                                 {filteredProducts
                                     .map((product, index) => (
                                         <ProductCard

@@ -45,12 +45,12 @@ const CustomOrder = () => {
                                 className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
                             />
                         </motion.div>
-                        {/* Decorative Background Element */}
-                        <div className="absolute -top-10 -left-10 w-full h-full border-2 border-ashvi-pink/30 rounded-2xl z-0 transform translate-x-4 translate-y-4"></div>
+                        {/* Decorative Background Element - Hidden on mobile to prevent overflow/clutter */}
+                        <div className="hidden lg:block absolute -top-10 -left-10 w-full h-full border-2 border-ashvi-pink/30 rounded-2xl z-0 transform translate-x-4 translate-y-4"></div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="w-full lg:w-1/2">
+                    <div className="w-full lg:w-1/2 text-center lg:text-left">
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -73,7 +73,7 @@ const CustomOrder = () => {
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ delay: 0.2 + (index * 0.1) }}
-                                        className="flex items-start gap-4"
+                                        className="flex flex-col md:flex-row items-center md:items-start gap-4"
                                     >
                                         <div className="p-3 bg-ashvi-light rounded-full shrink-0">
                                             {item.icon}
@@ -92,7 +92,7 @@ const CustomOrder = () => {
                                 rel="noopener noreferrer"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="inline-flex items-center gap-3 bg-ashvi-dark text-white px-8 py-4 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all hover:bg-black"
+                                className="inline-flex items-center gap-3 bg-ashvi-dark text-white px-8 py-4 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all hover:bg-black mx-auto lg:mx-0"
                             >
                                 Start Custom Order
                                 <Scissors size={20} />

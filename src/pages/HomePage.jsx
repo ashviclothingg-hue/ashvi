@@ -25,8 +25,8 @@ function HomePage() {
                 <OfferBanner />
                 <Collection />
                 <BabiesCollection />
-                <FabricsCollection />
                 <CustomOrder />
+                <FabricsCollection />
                 <Features />
                 <HowToOrder />
                 <Reviews />

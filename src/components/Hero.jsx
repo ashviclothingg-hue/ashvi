@@ -25,13 +25,15 @@ const Hero = () => {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-gray-700 text-lg md:text-xl font-semibold tracking-widest mb-2 uppercase">
-                            Where Style Meets Comfort
+                            Handcrafted | Made-to-Order
                         </h2>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-gray-900 mb-6 leading-tight">
-                            Unique outfits for <span className="text-rose-400">pretty women</span> and <span className="text-rose-400">little divas</span> with customisation
+                            We Design your <span className="text-rose-400">Dreams✨</span>
                         </h1>
                         <p className="text-gray-800 text-lg md:text-xl mb-8 leading-relaxed font-medium">
-                            Discover our exclusive collection of elegant, comfortable, and affordable outfits.
+                            ✨ Every outfit is stitched with care, comfort & elegance ✨
+                            <br />
+                            Custom-made women & Kids wear, designed for everyday charm & special occasions.
                         </p>
 
                         <Link

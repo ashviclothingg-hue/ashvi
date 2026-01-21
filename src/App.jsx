@@ -14,6 +14,8 @@ import CollectionPage from './pages/CollectionPage';
 import BabyFitsPage from './pages/BabyFitsPage';
 import TermsAndConditions from './pages/TermsAndConditions';
 
+import ProductDetailsPage from './pages/ProductDetailsPage';
+
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,7 @@ function App() {
         <Route path="/babies/:subCategory" element={<BabiesPage />} />
         <Route path="/baby-fits" element={<BabyFitsPage />} />
         <Route path="/collection" element={<CollectionPage />} />
+        <Route path="/product/:productId" element={<ProductDetailsPage />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       </Routes>
     </Router>

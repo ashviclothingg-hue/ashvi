@@ -12,7 +12,8 @@ const Footer = () => {
                     <div className="text-center md:text-left">
                         <h2 className="text-3xl font-playfair font-bold mb-4">ASHVI</h2>
                         <p className="text-ashvi-dark/80 mb-6">
-                            Where Style Meets Comfort. We bring you the trendiest fashion for girls.
+                            We Design your Dreams✨<br />
+                            Handcrafted | Made-to-Order
                         </p>
                         <div className="flex justify-center md:justify-start space-x-4">
                             <a

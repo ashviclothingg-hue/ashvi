@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import ProductCard from '../components/ProductCard';
 
 const BabiesPage = () => {
     const { subCategory } = useParams();
@@ -32,10 +33,10 @@ const BabiesPage = () => {
                         id: doc.id,
                         ...doc.data()
                     }));
-                    
+
                     // Filter for specific category
                     const filtered = productsData.filter(p => p.category === targetCategory);
-                    
+
                     setProducts(filtered);
                     setLoading(false);
                 },
@@ -99,43 +100,13 @@ Is this available?`;
                         <p className="text-sm text-gray-400">Please check back soon!</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 gap-y-6 md:gap-8">
                         {products.map((product, index) => (
-                            <motion.div
+                            <ProductCard
                                 key={product.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ y: -10 }}
-                                className="bg-ashvi-light rounded-2xl overflow-hidden shadow-soft group"
-                            >
-                                <div className="relative h-[400px] overflow-hidden bg-gray-50 flex items-center justify-center">
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-ashvi-dark shadow-sm">
-                                        Baby
-                                    </div>
-                                </div>
-
-                                <div className="p-6">
-                                    <h3 className="font-playfair font-semibold text-lg text-gray-800 mb-2 truncate">
-                                        {product.name}
-                                    </h3>
-                                    <p className="text-rose-500 font-bold text-xl mb-4">
-                                        ₹{product.price}
-                                    </p>
-                                    <button
-                                        onClick={() => handleOrder(product)}
-                                        className="w-full flex items-center justify-center gap-2 bg-ashvi-dark text-white py-3 px-4 rounded-xl hover:bg-gray-800 transition-colors font-semibold shadow-lg shadow-gray-200"
-                                    >
-                                        <MessageCircle size={18} />
-                                        Order Now
-                                    </button>
-                                </div>
-                            </motion.div>
+                                product={product}
+                                index={index}
+                            />
                         ))}
                     </div>
                 )}

@@ -136,13 +136,13 @@ const Navbar = () => {
 
             {/* Mobile Menu Dropdown */}
             {isOpen && (
-                <div className="md:hidden bg-ashvi-light/95 backdrop-blur-md animate-fade-in shadow-lg absolute w-full left-0">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+                <div className="md:hidden bg-white shadow-lg absolute w-full left-0 border-t border-gray-100">
+                    <div className="px-4 pt-4 pb-6 space-y-2">
                         {menuItems.map((item) => (
                             <button
                                 key={item.name}
                                 onClick={() => handleNavigation(item.to, item.isRoute)}
-                                className="block w-full text-left px-3 py-2 text-base font-medium text-ashvi-dark hover:text-ashvi-pink hover:bg-ashvi-pink/10 rounded-md cursor-pointer bg-transparent border-none"
+                                className="block w-full text-left px-3 py-3 text-base font-medium text-gray-800 hover:text-ashvi-pink hover:bg-ashvi-pink/5 rounded-lg transition-colors"
                             >
                                 {item.name}
                             </button>
@@ -152,13 +152,17 @@ const Navbar = () => {
                         <RouterLink
                             to="/baby-fits"
                             onClick={() => setIsOpen(false)}
-                            className="block px-3 py-2 text-base font-medium text-ashvi-dark hover:text-ashvi-pink hover:bg-ashvi-pink/10 rounded-md cursor-pointer"
+                            className="block w-full text-left px-3 py-3 text-base font-medium text-gray-800 hover:text-ashvi-pink hover:bg-ashvi-pink/5 rounded-lg transition-colors"
                         >
                             Baby Fits
                         </RouterLink>
+
                         {user ? (
-                            <div className="border-t border-gray-200 pt-2 mt-2">
-                                <div className="px-3 py-2 text-base font-medium text-ashvi-dark mb-2">
+                            <div className="border-t border-gray-100 pt-3 mt-3">
+                                <div className="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                    Account
+                                </div>
+                                <div className="px-3 py-2 text-base font-medium text-gray-800">
                                     Hello, {user.displayName || 'User'}
                                 </div>
                                 <button
@@ -166,19 +170,23 @@ const Navbar = () => {
                                         handleLogout();
                                         setIsOpen(false);
                                     }}
-                                    className="block w-full px-3 py-2 text-base font-medium text-red-500 hover:bg-red-50 rounded-md cursor-pointer"
+                                    className="block w-full text-left px-3 py-3 text-base font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
                                 >
+                                    <LogOut size={18} />
                                     Logout
                                 </button>
                             </div>
                         ) : (
-                            <RouterLink
-                                to="/login"
-                                onClick={() => setIsOpen(false)}
-                                className="block px-3 py-2 text-base font-medium text-ashvi-pink hover:bg-ashvi-pink/10 rounded-md cursor-pointer"
-                            >
-                                Login / Signup
-                            </RouterLink>
+                            <div className="border-t border-gray-100 pt-3 mt-3">
+                                <RouterLink
+                                    to="/login"
+                                    onClick={() => setIsOpen(false)}
+                                    className="block w-full text-left px-3 py-3 text-base font-medium text-ashvi-pink hover:bg-ashvi-pink/5 rounded-lg transition-colors flex items-center gap-2"
+                                >
+                                    <User size={18} />
+                                    Login / Signup
+                                </RouterLink>
+                            </div>
                         )}
                     </div>
                 </div>

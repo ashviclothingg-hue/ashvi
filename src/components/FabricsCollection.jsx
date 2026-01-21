@@ -39,15 +39,14 @@ const FabricsCollection = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-playfair font-bold text-ashvi-dark mb-4">
-                        Premium Fabrics
+                        Select Fabric
                     </h2>
                     <p className="text-gray-600 max-w-2xl mx-auto font-medium">
-                        Explore our exclusive collection of unstitched fabrics.
-                        Perfect for your custom designs.
+                        Choose from our exclusive collection for your custom order.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 gap-y-6 md:gap-8">
                     {fabrics.map((fabric, index) => (
                         <motion.div
                             key={fabric.id}
@@ -65,28 +64,20 @@ const FabricsCollection = () => {
                                 />
                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <a
-                                        href={`https://wa.me/${whatsappNumber}?text=Hi,%20I%20am%20interested%20in%20fabric:%20${fabric.name}`}
+                                        href={`https://wa.me/${whatsappNumber}?text=Hi,%20I%20want%20to%20use%20this%20Fabric%20for%20custom%20order:%20${fabric.name}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="bg-white text-ashvi-dark px-6 py-2 rounded-full font-medium hover:bg-ashvi-pink hover:text-white transition-colors"
                                     >
-                                        Inquire Now
+                                        Select Fabric
                                     </a>
                                 </div>
                             </div>
                             <div className="p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">{fabric.name}</h3>
-                                <div className="flex justify-between items-center text-gray-600 text-sm">
-                                    <span className="flex items-center gap-1">
-                                        <Palette size={16} /> {fabric.category || 'Fabric'}
-                                    </span>
-                                    {fabric.price && (
-                                        <span className="font-bold text-ashvi-pink text-lg">
-                                            ₹{fabric.price}
-                                            <span className="text-xs text-gray-400 font-normal">/{fabric.unit || 'meter'}</span>
-                                        </span>
-                                    )}
-                                </div>
+                                <span className="flex items-center gap-1">
+                                    <Palette size={16} /> {fabric.category || 'Fabric'}
+                                </span>
                                 {fabric.details && (
                                     <p className="text-xs text-gray-400 mt-3 line-clamp-2">
                                         {fabric.details}
