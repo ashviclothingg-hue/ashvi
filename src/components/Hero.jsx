@@ -24,17 +24,18 @@ const Hero = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h2 className="text-gray-700 text-lg md:text-xl font-semibold tracking-widest mb-2 uppercase">
-                            Handcrafted | Made-to-Order
-                        </h2>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold text-gray-900 mb-6 leading-tight">
-                            We Design your <span className="text-rose-400">Dreams✨</span>
+                            ASHVI - <span className="text-rose-400">Made just for you</span>
                         </h1>
-                        <p className="text-gray-800 text-lg md:text-xl mb-8 leading-relaxed font-medium">
-                            ✨ Every outfit is stitched with care, comfort & elegance ✨
-                            <br />
-                            Custom-made women & Kids wear, designed for everyday charm & special occasions.
-                        </p>
+                        <div className="mb-8">
+                            <p className="text-gray-800 text-lg md:text-xl leading-relaxed font-medium">
+                                Mom-Daughter sets • Dresses • Blouses • Suits<br />
+                                <span className="text-rose-500 font-bold">Made-to-order | Crafted with care</span>
+                            </p>
+                            <p className="text-gray-500 text-sm md:text-base font-bold tracking-[0.2em] uppercase mt-4">
+                                Designed by Ashvini
+                            </p>
+                        </div>
 
                         <Link
                             to="/collection"

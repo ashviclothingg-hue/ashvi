@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { Trash2, Plus, Upload, Loader, X } from 'lucide-react';
+import { Trash2, Plus, Upload, Loader, X, Pencil } from 'lucide-react';
 import ImageCropper from '../components/ImageCropper';
 import ProductCard from '../components/ProductCard';
 
@@ -26,7 +26,7 @@ const AdminPage = () => {
     const [newItem, setNewItem] = useState({
         name: '',
         price: '',
-        details: '',
+        description: '',
         category: 'Short Kurtis',
         unit: 'meter',
         specialOffer: false,
@@ -34,6 +34,7 @@ const AdminPage = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [editingItemId, setEditingItemId] = useState(null);
 
     const [reviews, setReviews] = useState([]);
     const [fabrics, setFabrics] = useState([]);
@@ -278,12 +279,15 @@ const AdminPage = () => {
         e.preventDefault();
         const name = newItem.name.trim();
         const price = Number(newItem.price);
-        const details = newItem.details.trim();
+        const description = newItem.description.trim();
+
+        // Check if we have existing images (strings) or new files (Blobs)
+        const hasImages = newItem.images.length > 0;
 
         const isFabric = activeTab === 'fabric';
 
         // Validation: Price must be > 0 (unless it's a fabric, where we allow 0/empty)
-        if (newItem.images.length === 0 || !name || isNaN(price) || (price <= 0 && !isFabric)) {
+        if (!hasImages || !name || isNaN(price) || (price <= 0 && !isFabric)) {
             setError(isFabric
                 ? "Please fill all fields. Add at least one image and a name."
                 : "Please fill all fields correctly. Price must be greater than 0."
@@ -296,8 +300,8 @@ const AdminPage = () => {
             return;
         }
 
-        if (details.length > 1000) {
-            setError("Product details must be under 1000 characters.");
+        if (description.length > 1000) {
+            setError("Product description must be under 1000 characters.");
             return;
         }
 
@@ -307,8 +311,13 @@ const AdminPage = () => {
         try {
             const imageUrls = [];
 
-            // Upload each image to Cloudinary
+            // Upload each image to Cloudinary IF it's a new file (not a string URL)
             for (const image of newItem.images) {
+                if (typeof image === 'string') {
+                    imageUrls.push(image);
+                    continue;
+                }
+
                 const formData = new FormData();
                 formData.append('file', image);
                 formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
@@ -340,7 +349,7 @@ const AdminPage = () => {
             const payload = {
                 name: newItem.name,
                 price: Number(newItem.price), // This is MRP if special offer
-                details: newItem.details,
+                description: newItem.description,
                 category: activeTab === 'fabric' ? 'Fabric' : newItem.category,
                 unit: newItem.unit || 'meter',
                 isSpecialOffer: newItem.specialOffer || false,
@@ -353,7 +362,17 @@ const AdminPage = () => {
                 payload.discountPrice = Number(newItem.discountPrice);
             }
 
-            await addDoc(collection(db, collectionName), payload);
+            if (editingItemId) {
+                await setDoc(doc(db, collectionName, editingItemId), {
+                    ...payload,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+                alert("Product updated successfully!");
+                setEditingItemId(null);
+            } else {
+                await addDoc(collection(db, collectionName), payload);
+                alert("Product added successfully!");
+            }
 
             // Reset Form (maintain current tab category default)
             let defaultCategory = 'Short Kurtis';
@@ -363,14 +382,16 @@ const AdminPage = () => {
             setNewItem({
                 name: '',
                 price: '',
-                details: '',
+                description: '',
                 category: defaultCategory,
                 specialOffer: false,
                 discountPrice: '',
                 images: []
             });
-            document.getElementById('file-input').value = "";
-            alert("Product added successfully!");
+            setEditingItemId(null);
+            if (document.getElementById('file-input')) {
+                document.getElementById('file-input').value = "";
+            }
 
         } catch (err) {
             console.error("Full Error details:", err);
@@ -380,11 +401,45 @@ const AdminPage = () => {
         }
     };
 
+    const handleEditProduct = (product) => {
+        setEditingItemId(product.id);
+        setNewItem({
+            name: product.name || '',
+            price: product.price || '',
+            description: product.description || product.details || '',
+            category: product.category || 'Short Kurtis',
+            unit: product.unit || 'meter',
+            specialOffer: product.isSpecialOffer || false,
+            discountPrice: product.discountPrice || '',
+            images: product.images || (product.image ? [product.image] : [])
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        let defaultCategory = 'Short Kurtis';
+        if (activeTab === 'baby') defaultCategory = 'Babies Casual';
+        if (activeTab === 'fabric') defaultCategory = 'Fabric';
+
+        setEditingItemId(null);
+        setNewItem({
+            name: '',
+            price: '',
+            description: '',
+            category: defaultCategory,
+            specialOffer: false,
+            discountPrice: '',
+            images: []
+        });
+    };
     const handleDeleteProduct = async (id, collectionName = 'products') => {
         if (!window.confirm("Are you sure you want to delete this item?")) return;
 
         try {
             await deleteDoc(doc(db, collectionName, id));
+            if (editingItemId === id) {
+                handleCancelEdit();
+            }
         } catch (err) {
             console.error("Error deleting item:", err);
             alert("Failed to delete item.");
@@ -476,8 +531,8 @@ const AdminPage = () => {
                     <div className={`lg:col-span-2 bg-white rounded-xl shadow-md p-6 border-t-4 ${activeTab === 'main' ? 'border-t-indigo-500' : activeTab === 'baby' ? 'border-t-rose-500' : 'border-t-amber-500'
                         }`}>
                         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                            <Plus size={24} className={activeTab === 'main' ? 'text-indigo-600' : activeTab === 'baby' ? 'text-rose-500' : 'text-amber-500'} />
-                            Add New {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby' : 'Fabric'} Product
+                            {editingItemId ? <Pencil size={24} className="text-blue-500" /> : <Plus size={24} className={activeTab === 'main' ? 'text-indigo-600' : activeTab === 'baby' ? 'text-rose-500' : 'text-amber-500'} />}
+                            {editingItemId ? 'Edit' : 'Add New'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby' : 'Fabric'} Product
                         </h2>
 
                         {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -541,18 +596,18 @@ const AdminPage = () => {
                                 </div>
                             )}
 
-                            {/* Details */}
+                            {/* Description */}
                             <div className="md:col-span-2 mt-4">
-                                <label className="block text-sm font-medium text-gray-700">Product Details</label>
+                                <label className="block text-sm font-medium text-gray-700">Product Description</label>
                                 <textarea
-                                    value={newItem.details}
+                                    value={newItem.description}
                                     maxLength={1000}
-                                    onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
+                                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
                                     rows={3}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="e.g. Pure Cotton, Dry Clean Only..."
                                 />
-                                <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.details.length}/1000</p>
+                                <p className="text-[10px] text-gray-400 text-right mt-1">{newItem.description.length}/1000</p>
                             </div>
 
                             {/* Category selection */}
@@ -645,7 +700,7 @@ const AdminPage = () => {
                                         {newItem.images.map((img, index) => (
                                             <div key={index} className="relative group w-24 h-32 border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
                                                 <img
-                                                    src={URL.createObjectURL(img)}
+                                                    src={typeof img === 'string' ? img : URL.createObjectURL(img)}
                                                     alt={`Preview ${index}`}
                                                     className="w-full h-full object-cover"
                                                 />
@@ -676,14 +731,24 @@ const AdminPage = () => {
                                 >
                                     {submitting ? (
                                         <>
-                                            <Loader className="animate-spin mr-2" size={20} /> Uploading...
+                                            <Loader className="animate-spin mr-2" size={20} /> {editingItemId ? 'Updating...' : 'Uploading...'}
                                         </>
                                     ) : (
                                         <>
-                                            <Upload className="mr-2" size={20} /> Add to {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'}
+                                            {editingItemId ? <Pencil className="mr-2" size={20} /> : <Upload className="mr-2" size={20} />}
+                                            {editingItemId ? 'Update' : 'Add to'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'}
                                         </>
                                     )}
                                 </button>
+                                {editingItemId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="mt-2 w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                                    >
+                                        Cancel Edit
+                                    </button>
+                                )}
                             </div>
                         </form>
                     </div>
@@ -705,7 +770,7 @@ const AdminPage = () => {
                                         price: newItem.price || '0',
                                         // Create preview URLs for the images
                                         images: newItem.images.length > 0
-                                            ? newItem.images.map(file => URL.createObjectURL(file))
+                                            ? newItem.images.map(img => typeof img === 'string' ? img : URL.createObjectURL(img))
                                             : ['https://placehold.co/400x500?text=Product+Preview']
                                     }}
                                     index={0}
@@ -813,12 +878,20 @@ const AdminPage = () => {
                                         <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-600">{product.category || 'Kurti'}</span>
                                     </div>
                                     <p className="text-rose-500 font-bold">₹{product.price}</p>
-                                    <button
-                                        onClick={() => handleDeleteProduct(product.id, activeTab === 'fabric' ? 'fabrics' : 'products')}
-                                        className="mt-4 w-full flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
-                                    >
-                                        <Trash2 size={18} className="mr-2" /> Delete
-                                    </button>
+                                    <div className="mt-4 flex gap-2">
+                                        <button
+                                            onClick={() => handleEditProduct(product)}
+                                            className="flex-1 flex items-center justify-center p-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                                        >
+                                            <Pencil size={18} className="mr-2" /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteProduct(product.id, activeTab === 'fabric' ? 'fabrics' : 'products')}
+                                            className="flex-1 flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+                                        >
+                                            <Trash2 size={18} className="mr-2" /> Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}

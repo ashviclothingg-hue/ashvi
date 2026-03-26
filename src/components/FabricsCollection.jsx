@@ -78,9 +78,9 @@ const FabricsCollection = () => {
                                 <span className="flex items-center gap-1">
                                     <Palette size={16} /> {fabric.category || 'Fabric'}
                                 </span>
-                                {fabric.details && (
+                                {(fabric.description || fabric.details) && (
                                     <p className="text-xs text-gray-400 mt-3 line-clamp-2">
-                                        {fabric.details}
+                                        {fabric.description || fabric.details}
                                     </p>
                                 )}
                             </div>

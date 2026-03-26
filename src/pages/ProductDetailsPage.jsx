@@ -44,7 +44,7 @@ const ProductDetailsPage = () => {
             ? product.images[currentImageIndex]
             : product.image;
 
-        let message = `*Hello Ashvi Clothing!*\n`;
+        let message = `*Hello Ashvi!*\n`;
 
         if (product.isSpecialOffer) {
             message += `*Special Offer Order!*\n\n`;
@@ -194,7 +194,7 @@ const ProductDetailsPage = () => {
                         <div className="prose prose-sm text-gray-600 mb-8">
                             <h3 className="text-gray-900 font-semibold mb-2">Description</h3>
                             <p>
-                                {product.description || "Experience elegance and comfort with this beautiful outfit from Ashvi. Perfect for special occasions or daily wear."}
+                                {product.description || product.details || "Experience elegance and comfort with this beautiful outfit from Ashvi. Perfect for special occasions or daily wear."}
                             </p>
                         </div>
 

@@ -11,8 +11,8 @@ const Footer = () => {
                     {/* Brand Info */}
                     <div className="text-center md:text-left">
                         <h2 className="text-3xl font-playfair font-bold mb-4">ASHVI</h2>
-                        <p className="text-ashvi-dark/80 mb-6">
-                            We Design your Dreams✨<br />
+                        <p className="text-ashvi-dark/80 mb-6 font-medium">
+                            Designed by Ashvini<br />
                             Handcrafted | Made-to-Order
                         </p>
                         <div className="flex justify-center md:justify-start space-x-4">
@@ -58,7 +58,8 @@ const Footer = () => {
                     <div className="text-center md:text-right">
                         <h3 className="text-xl font-semibold mb-6 text-ashvi-pink">Contact Us</h3>
                         <p className="text-ashvi-dark/80 mb-2">WhatsApp Orders Only</p>
-                        <p className="text-xl font-bold mb-4 text-ashvi-dark">+91 7803024406</p>
+                        <p className="text-xl font-bold mb-2 text-ashvi-dark">+91 7803024406</p>
+                        <p className="text-sm font-medium mb-4 text-ashvi-dark/80">ashvi.co.official@gmail.com</p>
                         <a
                             href="https://wa.me/917803024406"
                             target="_blank"
@@ -72,7 +73,7 @@ const Footer = () => {
 
                 <div className="border-t border-ashvi-dark/10 pt-8 text-center text-ashvi-dark/60 text-sm">
                     <p className="flex items-center justify-center gap-1">
-                        Made with <Heart size={14} className="text-red-500 fill-current" /> by ASHVI Team &copy; {new Date().getFullYear()}
+                        &copy; {new Date().getFullYear()} ASHVI. All rights reserved.
                     </p>
                 </div>
             </div>

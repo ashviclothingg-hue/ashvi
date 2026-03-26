@@ -56,7 +56,7 @@ const TermsAndConditions = () => {
                                 3. Production & Delivery
                             </h2>
                             <ul className="list-disc list-outside ml-5 space-y-2">
-                                <li>Production time: 7–10 days for made-to-order items (can vary based on order volume).</li>
+                                <li>Production time: 3-5 days for made-to-order items (can vary based on order volume).</li>
                                 <li>Shipping is PAN India. Delivery time may vary depending on location and courier service.</li>
                                 <li>Customers will receive a tracking number (if applicable) once the order is dispatched.</li>
                             </ul>
@@ -84,8 +84,7 @@ const TermsAndConditions = () => {
                                 5. Cancellations
                             </h2>
                             <ul className="list-disc list-outside ml-5 space-y-2">
-                                <li>Orders can be cancelled within 24 hours of confirmation.</li>
-                                <li>Custom / personalized orders cannot be cancelled once stitching/production has started.</li>
+                                <li>Custom / personalized orders cannot be cancelled.</li>
                             </ul>
                         </section>
 
@@ -112,6 +111,24 @@ const TermsAndConditions = () => {
                             <ul className="list-disc list-outside ml-5 space-y-2">
                                 <li>Customer information, including contact details and address, will only be used for order processing and delivery.</li>
                                 <li>We do not share personal information with third parties for marketing purposes.</li>
+                            </ul>
+                        </section>
+
+                        <div className="border-b border-gray-200"></div>
+
+                        {/* Section 8 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-ashvi-dark mb-4 border-l-4 border-ashvi-pink pl-3">
+                                8. Contact Us
+                            </h2>
+                            <p className="mb-4">For any queries or complaints, contact us at:</p>
+                            <ul className="space-y-2 font-medium">
+                                <li className="flex items-center gap-2">
+                                    <span>📧</span> Email: <a href="mailto:ashvi.co.official@gmail.com" className="text-ashvi-pink hover:underline">ashvi.co.official@gmail.com</a>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <span>📞</span> WhatsApp: <a href="https://wa.me/917803024406" target="_blank" rel="noopener noreferrer" className="text-ashvi-pink hover:underline">7803024406</a>
+                                </li>
                             </ul>
                         </section>
 

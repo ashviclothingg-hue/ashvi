@@ -26,7 +26,7 @@ const ProductCard = ({ product, index, orderSource = "ASHVI" }) => {
     const handleOrder = (e) => {
         e.preventDefault(); // Prevent navigation when clicking order button
 
-        let message = `*Hello Ashvi Clothing!*\n`;
+        let message = `*Hello Ashvi!*\n`;
 
         if (product.isSpecialOffer) {
             message += `*Special Offer Order!*\n\n`;
