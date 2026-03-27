@@ -147,7 +147,7 @@ const Reviews = () => {
                                     ))}
                                 </div>
 
-                                <p className="text-gray-600 mb-6 italic flex-grow">
+                                <p className="text-gray-600 mb-6 italic flex-grow whitespace-pre-wrap">
                                     "{review.text}"
                                 </p>
 

@@ -193,7 +193,7 @@ const ProductDetailsPage = () => {
 
                         <div className="prose prose-sm text-gray-600 mb-8">
                             <h3 className="text-gray-900 font-semibold mb-2">Description</h3>
-                            <p>
+                            <p className="whitespace-pre-wrap">
                                 {product.description || product.details || "Experience elegance and comfort with this beautiful outfit from Ashvi. Perfect for special occasions or daily wear."}
                             </p>
                         </div>
