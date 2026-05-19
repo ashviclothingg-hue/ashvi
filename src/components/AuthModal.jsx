@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, User, Phone, X, LogIn } from 'lucide-react';
+import { Mail, Lock, User, Phone, X, LogIn, Eye, EyeOff } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -12,6 +12,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     // Login State
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
 
     // Signup State
     const [signupData, setSignupData] = useState({
@@ -20,6 +21,7 @@ const AuthModal = ({ isOpen, onClose }) => {
         phone: '',
         password: ''
     });
+    const [showSignupPassword, setShowSignupPassword] = useState(false);
 
     if (!isOpen) return null;
 
@@ -109,13 +111,20 @@ const AuthModal = ({ isOpen, onClose }) => {
                             <div className="relative">
                                 <Lock className="absolute top-3.5 left-3 text-gray-400" size={20} />
                                 <input
-                                    type="password"
+                                    type={showLoginPassword ? "text" : "password"}
                                     required
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ashvi-pink/50 focus:border-ashvi-pink outline-none transition-all"
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ashvi-pink/50 focus:border-ashvi-pink outline-none transition-all"
                                     placeholder="Password"
                                     value={loginPassword}
                                     onChange={(e) => setLoginPassword(e.target.value)}
                                 />
+                                <button
+                                    type="button"
+                                    className="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 focus:outline-none z-20"
+                                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                >
+                                    {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
                             <button
                                 type="submit"
@@ -164,13 +173,20 @@ const AuthModal = ({ isOpen, onClose }) => {
                             <div className="relative">
                                 <Lock className="absolute top-3.5 left-3 text-gray-400" size={20} />
                                 <input
-                                    type="password"
+                                    type={showSignupPassword ? "text" : "password"}
                                     required
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ashvi-pink/50 focus:border-ashvi-pink outline-none transition-all"
+                                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ashvi-pink/50 focus:border-ashvi-pink outline-none transition-all"
                                     placeholder="Password"
                                     value={signupData.password}
                                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                                 />
+                                <button
+                                    type="button"
+                                    className="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 focus:outline-none z-20"
+                                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                                >
+                                    {showSignupPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
                             </div>
                             <button
                                 type="submit"
@@ -185,8 +201,8 @@ const AuthModal = ({ isOpen, onClose }) => {
                     <div className="mt-6 text-center">
                         <p className="text-gray-600 text-sm">
                             {isLogin ? "Don't have an account? " : "Already have an account? "}
-                            <button
-                                onClick={() => { setIsLogin(!isLogin); setError(''); }}
+                             <button
+                                onClick={() => { setIsLogin(!isLogin); setError(''); setShowLoginPassword(false); setShowSignupPassword(false); }}
                                 className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
                             >
                                 {isLogin ? 'Sign Up' : 'Login'}
