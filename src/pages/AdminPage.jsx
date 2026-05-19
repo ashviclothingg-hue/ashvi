@@ -20,7 +20,7 @@ const AdminPage = () => {
     const [authLoading, setAuthLoading] = useState(true);
 
     // Tab State
-    const [activeTab, setActiveTab] = useState('main'); // 'main', 'baby', 'fabric'
+    const [activeTab, setActiveTab] = useState('main'); // 'main', 'baby', 'mommini', 'fabric'
 
     // Form State
     const [newItem, setNewItem] = useState({
@@ -129,16 +129,7 @@ const AdminPage = () => {
         };
     }, [isAuthenticated]);
 
-    // Update default category when tab changes
-    useEffect(() => {
-        if (activeTab === 'main') {
-            setNewItem(prev => ({ ...prev, category: 'Short Kurtis' }));
-        } else if (activeTab === 'baby') {
-            setNewItem(prev => ({ ...prev, category: 'Babies Casual' }));
-        } else {
-            setNewItem(prev => ({ ...prev, category: 'Fabric' }));
-        }
-    }, [activeTab]);
+    // Default categories are set directly on tab switch click handler to avoid overwriting edits
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -377,6 +368,7 @@ const AdminPage = () => {
             // Reset Form (maintain current tab category default)
             let defaultCategory = 'Short Kurtis';
             if (activeTab === 'baby') defaultCategory = 'Babies Casual';
+            if (activeTab === 'mommini') defaultCategory = 'Mom & Mini Casual';
             if (activeTab === 'fabric') defaultCategory = 'Fabric';
 
             setNewItem({
@@ -402,6 +394,32 @@ const AdminPage = () => {
     };
 
     const handleEditProduct = (product) => {
+        // Automatically switch the active tab to match the product's type
+        if (product.category === 'Fabric') {
+            setActiveTab('fabric');
+        } else if (
+            product.category === 'Mom & Mini Casual' ||
+            product.category === 'Mom & Mini Ethnic' ||
+            (product.category && (
+                product.category.toLowerCase().includes('mom & mini') ||
+                product.category.toLowerCase().includes('mom and mini')
+            ))
+        ) {
+            setActiveTab('mommini');
+        } else if (
+            product.category === 'Babies Casual' ||
+            product.category === 'Babies Ethnic' ||
+            product.category === 'Baby Fits' ||
+            (product.category && (
+                product.category.toLowerCase().includes('baby') || 
+                product.category.toLowerCase().includes('babies')
+            ))
+        ) {
+            setActiveTab('baby');
+        } else {
+            setActiveTab('main');
+        }
+
         setEditingItemId(product.id);
         setNewItem({
             name: product.name || '',
@@ -419,6 +437,7 @@ const AdminPage = () => {
     const handleCancelEdit = () => {
         let defaultCategory = 'Short Kurtis';
         if (activeTab === 'baby') defaultCategory = 'Babies Casual';
+        if (activeTab === 'mommini') defaultCategory = 'Mom & Mini Casual';
         if (activeTab === 'fabric') defaultCategory = 'Fabric';
 
         setEditingItemId(null);
@@ -462,8 +481,21 @@ const AdminPage = () => {
         if (activeTab === 'fabric') return fabrics;
 
         return products.filter(product => {
-            const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(product.category);
-            return activeTab === 'baby' ? isBabyProduct : !isBabyProduct;
+            const isBabyProduct = 
+                ['Babies Casual', 'Babies Ethnic', 'Baby Fits'].includes(product.category) ||
+                (product.category && (
+                    product.category.toLowerCase().includes('baby') || 
+                    product.category.toLowerCase().includes('babies')
+                ));
+            const isMomMiniProduct =
+                ['Mom & Mini Casual', 'Mom & Mini Ethnic'].includes(product.category) ||
+                (product.category && (
+                    product.category.toLowerCase().includes('mom & mini') ||
+                    product.category.toLowerCase().includes('mom and mini')
+                ));
+            if (activeTab === 'baby') return isBabyProduct;
+            if (activeTab === 'mommini') return isMomMiniProduct;
+            return !isBabyProduct && !isMomMiniProduct;
         });
     };
 
@@ -486,7 +518,12 @@ const AdminPage = () => {
                     {/* Tab Switcher */}
                     <div className="bg-white p-1 rounded-lg border border-gray-200 inline-flex">
                         <button
-                            onClick={() => setActiveTab('main')}
+                            onClick={() => {
+                                setActiveTab('main');
+                                if (!editingItemId) {
+                                    setNewItem(prev => ({ ...prev, category: 'Short Kurtis' }));
+                                }
+                            }}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'main'
                                 ? 'bg-indigo-600 text-white shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -495,7 +532,12 @@ const AdminPage = () => {
                             Main Collection
                         </button>
                         <button
-                            onClick={() => setActiveTab('baby')}
+                            onClick={() => {
+                                setActiveTab('baby');
+                                if (!editingItemId) {
+                                    setNewItem(prev => ({ ...prev, category: 'Babies Casual' }));
+                                }
+                            }}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'baby'
                                 ? 'bg-rose-500 text-white shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -504,7 +546,26 @@ const AdminPage = () => {
                             Baby Fits
                         </button>
                         <button
-                            onClick={() => setActiveTab('fabric')}
+                            onClick={() => {
+                                setActiveTab('mommini');
+                                if (!editingItemId) {
+                                    setNewItem(prev => ({ ...prev, category: 'Mom & Mini Casual' }));
+                                }
+                            }}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'mommini'
+                                ? 'bg-pink-500 text-white shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            Mom & Mini
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('fabric');
+                                if (!editingItemId) {
+                                    setNewItem(prev => ({ ...prev, category: 'Fabric' }));
+                                }
+                            }}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'fabric'
                                 ? 'bg-amber-500 text-white shadow-sm'
                                 : 'text-gray-600 hover:text-gray-900'
@@ -528,11 +589,11 @@ const AdminPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
 
                     {/* Form Section */}
-                    <div className={`lg:col-span-2 bg-white rounded-xl shadow-md p-6 border-t-4 ${activeTab === 'main' ? 'border-t-indigo-500' : activeTab === 'baby' ? 'border-t-rose-500' : 'border-t-amber-500'
+                    <div className={`lg:col-span-2 bg-white rounded-xl shadow-md p-6 border-t-4 ${activeTab === 'main' ? 'border-t-indigo-500' : activeTab === 'baby' ? 'border-t-rose-500' : activeTab === 'mommini' ? 'border-t-pink-500' : 'border-t-amber-500'
                         }`}>
                         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                            {editingItemId ? <Pencil size={24} className="text-blue-500" /> : <Plus size={24} className={activeTab === 'main' ? 'text-indigo-600' : activeTab === 'baby' ? 'text-rose-500' : 'text-amber-500'} />}
-                            {editingItemId ? 'Edit' : 'Add New'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby' : 'Fabric'} Product
+                            {editingItemId ? <Pencil size={24} className="text-blue-500" /> : <Plus size={24} className={activeTab === 'main' ? 'text-indigo-600' : activeTab === 'baby' ? 'text-rose-500' : activeTab === 'mommini' ? 'text-pink-500' : 'text-amber-500'} />}
+                            {editingItemId ? 'Edit' : 'Add New'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby' : activeTab === 'mommini' ? 'Mom & Mini' : 'Fabric'} Product
                         </h2>
 
                         {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -616,13 +677,12 @@ const AdminPage = () => {
                                     <label className="block text-sm font-medium text-gray-700">Category</label>
                                     <div className="flex flex-col gap-2">
                                         <select
-                                            value={[
-                                                // Main Collection
-                                                'Short Kurtis', 'Long Kurtis', 'Suit Sets', 'Anarkali Sets',
-                                                'Co-ord Sets', 'One Piece Dress', 'Festive Fits',
-                                                // Baby Fits
-                                                'Babies Casual', 'Babies Ethnic'
-                                            ].includes(newItem.category) ? newItem.category : 'custom'}
+                                            value={(activeTab === 'main'
+                                                ? ['Tops & Shirts', 'Short Kurtis', 'Long Kurtis', 'Co-ord Sets', 'Straight Suit Sets', 'Flared Suit Sets', 'Dresses', 'Festive Fits']
+                                                : activeTab === 'mommini'
+                                                ? ['Mom & Mini Casual', 'Mom & Mini Ethnic']
+                                                : ['Babies Casual', 'Babies Ethnic']
+                                            ).includes(newItem.category) ? newItem.category : 'custom'}
                                             onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === 'custom') {
@@ -635,13 +695,20 @@ const AdminPage = () => {
                                         >
                                             {activeTab === 'main' ? (
                                                 <>
+                                                    <option value="Tops & Shirts">Tops & Shirts</option>
                                                     <option value="Short Kurtis">Short Kurtis</option>
                                                     <option value="Long Kurtis">Long Kurtis</option>
-                                                    <option value="Suit Sets">Suit Sets</option>
-                                                    <option value="Anarkali Sets">Anarkali Sets</option>
                                                     <option value="Co-ord Sets">Co-ord Sets</option>
-                                                    <option value="One Piece Dress">One Piece Dress</option>
+                                                    <option value="Straight Suit Sets">Straight Suit Sets</option>
+                                                    <option value="Flared Suit Sets">Flared Suit Sets</option>
+                                                    <option value="Dresses">Dresses</option>
                                                     <option value="Festive Fits">Festive Fits</option>
+                                                    <option value="custom">Other (Manual)</option>
+                                                </>
+                                            ) : activeTab === 'mommini' ? (
+                                                <>
+                                                    <option value="Mom & Mini Casual">Mom & Mini Casual</option>
+                                                    <option value="Mom & Mini Ethnic">Mom & Mini Ethnic</option>
                                                     <option value="custom">Other (Manual)</option>
                                                 </>
                                             ) : (
@@ -654,11 +721,12 @@ const AdminPage = () => {
                                         </select>
 
                                         {/* Manual Category Input */}
-                                        {![
-                                            'Short Kurtis', 'Long Kurtis', 'Suit Sets', 'Anarkali Sets',
-                                            'Co-ord Sets', 'One Piece Dress', 'Festive Fits',
-                                            'Babies Casual', 'Babies Ethnic'
-                                        ].includes(newItem.category) && (
+                                        {!(activeTab === 'main'
+                                            ? ['Tops & Shirts', 'Short Kurtis', 'Long Kurtis', 'Co-ord Sets', 'Straight Suit Sets', 'Flared Suit Sets', 'Dresses', 'Festive Fits']
+                                            : activeTab === 'mommini'
+                                            ? ['Mom & Mini Casual', 'Mom & Mini Ethnic']
+                                            : ['Babies Casual', 'Babies Ethnic']
+                                        ).includes(newItem.category) && (
                                                 <input
                                                     type="text"
                                                     value={newItem.category}
@@ -726,7 +794,9 @@ const AdminPage = () => {
                                         ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
                                         : activeTab === 'baby'
                                             ? 'bg-rose-500 hover:bg-rose-600 focus:ring-rose-500'
-                                            : 'bg-amber-500 hover:bg-amber-600 focus:ring-amber-500'
+                                            : activeTab === 'mommini'
+                                                ? 'bg-pink-500 hover:bg-pink-600 focus:ring-pink-500'
+                                                : 'bg-amber-500 hover:bg-amber-600 focus:ring-amber-500'
                                         }`}
                                 >
                                     {submitting ? (
@@ -736,7 +806,7 @@ const AdminPage = () => {
                                     ) : (
                                         <>
                                             {editingItemId ? <Pencil className="mr-2" size={20} /> : <Upload className="mr-2" size={20} />}
-                                            {editingItemId ? 'Update' : 'Add to'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'}
+                                            {editingItemId ? 'Update' : 'Add to'} {activeTab === 'main' ? 'Collection' : activeTab === 'baby' ? 'Baby Fits' : activeTab === 'mommini' ? 'Mom & Mini' : 'Fabrics'}
                                         </>
                                     )}
                                 </button>
@@ -860,7 +930,7 @@ const AdminPage = () => {
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    {activeTab === 'main' ? 'Main Collection' : activeTab === 'baby' ? 'Baby Fits' : 'Fabrics'} Inventory ({displayItems.length})
+                    {activeTab === 'main' ? 'Main Collection' : activeTab === 'baby' ? 'Baby Fits' : activeTab === 'mommini' ? 'Mom & Mini' : 'Fabrics'} Inventory ({displayItems.length})
                 </h2>
 
                 {loading ? (

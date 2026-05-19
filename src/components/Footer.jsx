@@ -59,7 +59,7 @@ const Footer = () => {
                         <h3 className="text-xl font-semibold mb-6 text-ashvi-pink">Contact Us</h3>
                         <p className="text-ashvi-dark/80 mb-2">WhatsApp Orders Only</p>
                         <p className="text-xl font-bold mb-2 text-ashvi-dark">+91 7803024406</p>
-                        <p className="text-sm font-medium mb-4 text-ashvi-dark/80">ashvi.co.official@gmail.com</p>
+                        <p className="text-sm font-medium mb-4 text-ashvi-dark/80">ashvi.clothingg@gmail.com</p>
                         <a
                             href="https://wa.me/917803024406"
                             target="_blank"

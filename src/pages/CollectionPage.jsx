@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 import ProductCard from '../components/ProductCard';
+import ProductSkeleton from '../components/ProductSkeleton';
 
 const CollectionPage = () => {
     const [products, setProducts] = useState([]);
@@ -14,16 +15,41 @@ const CollectionPage = () => {
     const [error, setError] = useState(null);
     const [activeCategory, setActiveCategory] = useState('All');
 
-    const categories = [
-        'All',
+    const baseCategoriesOrder = [
+        'Tops & Shirts',
         'Short Kurtis',
         'Long Kurtis',
-        'Suit Sets',
-        'Anarkali Sets',
         'Co-ord Sets',
-        'One Piece Dress',
+        'Straight Suit Sets',
+        'Flared Suit Sets',
+        'Dresses',
         'Festive Fits'
     ];
+
+    // Find all categories that actually have at least one product
+    const activeCategories = Array.from(new Set(
+        products
+            .map(p => p.category)
+            .filter(cat => {
+                if (!cat) return false;
+                const isBaby = cat === 'Babies Casual' || cat === 'Babies Ethnic' || cat === 'Baby Fits' || cat.toLowerCase().includes('baby') || cat.toLowerCase().includes('babies');
+                const isMomMini = cat === 'Mom & Mini Casual' || cat === 'Mom & Mini Ethnic' || cat.toLowerCase().includes('mom & mini') || cat.toLowerCase().includes('mom and mini');
+                const isFabric = cat === 'Fabric';
+                return !isBaby && !isMomMini && !isFabric;
+            })
+    ));
+
+    // Sort active categories: first matching the order of baseCategoriesOrder, then any other custom categories
+    const sortedCategories = activeCategories.sort((a, b) => {
+        const indexA = baseCategoriesOrder.indexOf(a);
+        const indexB = baseCategoriesOrder.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+
+    const categories = ['All', ...sortedCategories];
 
     useEffect(() => {
         try {
@@ -54,8 +80,20 @@ const CollectionPage = () => {
 
     const displayedProducts = products.filter(p => {
         if (activeCategory === 'All') {
-            const isBabyProduct = ['Babies Casual', 'Babies Ethnic'].includes(p.category);
-            return !isBabyProduct;
+            const isBabyProduct = 
+                ['Babies Casual', 'Babies Ethnic', 'Baby Fits'].includes(p.category) ||
+                (p.category && (
+                    p.category.toLowerCase().includes('baby') ||
+                    p.category.toLowerCase().includes('babies')
+                ));
+            const isMomMini =
+                ['Mom & Mini Casual', 'Mom & Mini Ethnic'].includes(p.category) ||
+                (p.category && (
+                    p.category.toLowerCase().includes('mom & mini') ||
+                    p.category.toLowerCase().includes('mom and mini')
+                ));
+            const isFabric = p.category === 'Fabric';
+            return !isBabyProduct && !isMomMini && !isFabric;
         }
         return p.category === activeCategory;
     });
@@ -75,7 +113,7 @@ const CollectionPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center text-gray-500 py-20">Loading collection...</div>
+                        <ProductSkeleton count={8} />
                     ) : error ? (
                         <div className="text-center text-red-500 py-20">{error}</div>
                     ) : (

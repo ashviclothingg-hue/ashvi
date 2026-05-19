@@ -35,7 +35,19 @@ const BabiesPage = () => {
                     }));
 
                     // Filter for specific category
-                    const filtered = productsData.filter(p => p.category === targetCategory);
+                    const filtered = productsData.filter(p => {
+                        if (subCategory?.toLowerCase() === 'casual') {
+                            return p.category === 'Babies Casual' || 
+                                (p.category && p.category.toLowerCase().includes('casual')) ||
+                                (p.category && (
+                                    p.category.toLowerCase().includes('baby') || 
+                                    p.category.toLowerCase().includes('babies')
+                                ) && !p.category.toLowerCase().includes('ethnic'));
+                        } else {
+                            return p.category === 'Babies Ethnic' || 
+                                (p.category && p.category.toLowerCase().includes('ethnic'));
+                        }
+                    });
 
                     setProducts(filtered);
                     setLoading(false);

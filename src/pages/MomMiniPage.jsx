@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { MessageCircle } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 import ProductCard from '../components/ProductCard';
+import ProductSkeleton from '../components/ProductSkeleton';
 
-const BabyFitsPage = () => {
+const MomMiniPage = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -22,20 +21,17 @@ const BabyFitsPage = () => {
                     const productsData = snapshot.docs
                         .map(doc => ({ id: doc.id, ...doc.data() }))
                         .filter(p =>
-                            p.category === 'Babies Casual' ||
-                            p.category === 'Babies Ethnic' ||
-                            p.category === 'Baby Fits' ||
-                            (p.category && (
-                                p.category.toLowerCase().includes('baby') ||
-                                p.category.toLowerCase().includes('babies')
-                            ))
+                            p.category === 'Mom & Mini Casual' ||
+                            p.category === 'Mom & Mini Ethnic' ||
+                            (p.category && p.category.toLowerCase().includes('mom & mini')) ||
+                            (p.category && p.category.toLowerCase().includes('mom and mini'))
                         );
 
                     setProducts(productsData);
                     setLoading(false);
                 },
                 (err) => {
-                    console.error("Error fetching baby fits:", err);
+                    console.error("Error fetching mom & mini:", err);
                     setError("Unable to load products. Please refresh the page.");
                     setLoading(false);
                 }
@@ -51,15 +47,14 @@ const BabyFitsPage = () => {
     const getFilteredProducts = () => {
         if (activeTab === 'All') return products;
         if (activeTab === 'Casual') {
-            return products.filter(p => 
-                p.category === 'Babies Casual' || 
-                (p.category && p.category.toLowerCase().includes('casual')) ||
-                (p.category && !p.category.toLowerCase().includes('ethnic'))
+            return products.filter(p =>
+                p.category === 'Mom & Mini Casual' ||
+                (p.category && p.category.toLowerCase().includes('casual'))
             );
         }
         if (activeTab === 'Ethnic') {
-            return products.filter(p => 
-                p.category === 'Babies Ethnic' || 
+            return products.filter(p =>
+                p.category === 'Mom & Mini Ethnic' ||
                 (p.category && p.category.toLowerCase().includes('ethnic'))
             );
         }
@@ -74,11 +69,12 @@ const BabyFitsPage = () => {
             <div className="pt-24 pb-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h1 className="text-3xl md:text-5xl font-playfair font-bold text-gray-900 mb-4">
-                            Baby Fits
+                        <span className="text-rose-500 font-bold tracking-wider uppercase text-sm">Twinning Goals</span>
+                        <h1 className="text-3xl md:text-5xl font-playfair font-bold text-gray-900 mt-2 mb-4">
+                            Mom & Mini Collection
                         </h1>
                         <p className="text-gray-600 max-w-2xl mx-auto font-medium">
-                            Discover adorable styles for your little divas in Casual and Ethnic wear.
+                            Matching outfits for moms and their little divas — because twinning is winning! 💕
                         </p>
                     </div>
 
@@ -99,7 +95,7 @@ const BabyFitsPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center text-gray-500 py-20">Loading baby outfits...</div>
+                        <ProductSkeleton count={8} />
                     ) : error ? (
                         <div className="text-center text-red-500 py-20">{error}</div>
                     ) : displayedProducts.length === 0 ? (
@@ -111,7 +107,7 @@ const BabyFitsPage = () => {
                                     key={product.id}
                                     product={product}
                                     index={index}
-                                    orderSource="ASHVI (Baby Fits)"
+                                    orderSource="ASHVI (Mom & Mini)"
                                 />
                             ))}
                         </div>
@@ -123,4 +119,4 @@ const BabyFitsPage = () => {
     );
 };
 
-export default BabyFitsPage;
+export default MomMiniPage;

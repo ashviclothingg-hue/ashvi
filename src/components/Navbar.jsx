@@ -34,6 +34,19 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (location.pathname === '/' && location.state?.scrollTo) {
+            const target = location.state.scrollTo;
+            setTimeout(() => {
+                scroller.scrollTo(target, {
+                    smooth: true,
+                    duration: 500,
+                });
+            }, 300);
+            navigate('/', { replace: true, state: {} });
+        }
+    }, [location.pathname, location.state, navigate]);
+
     const handleNavigation = (to, isRoute) => {
         setIsOpen(false);
         if (isRoute) {
@@ -45,13 +58,7 @@ const Navbar = () => {
                     duration: 500,
                 });
             } else {
-                navigate('/');
-                setTimeout(() => {
-                    scroller.scrollTo(to, {
-                        smooth: true,
-                        duration: 500,
-                    });
-                }, 100);
+                navigate('/', { state: { scrollTo: to } });
             }
         }
     };
@@ -98,6 +105,14 @@ const Navbar = () => {
                             className="text-ashvi-dark hover:text-ashvi-pink transition-colors cursor-pointer font-medium"
                         >
                             Baby Fits
+                        </RouterLink>
+
+                        {/* Mom & Mini Link */}
+                        <RouterLink
+                            to="/mom-mini"
+                            className="text-ashvi-dark hover:text-ashvi-pink transition-colors cursor-pointer font-medium"
+                        >
+                            Mom & Mini
                         </RouterLink>
 
                         {user ? (
@@ -155,6 +170,15 @@ const Navbar = () => {
                             className="block w-full text-left px-3 py-3 text-base font-medium text-gray-800 hover:text-ashvi-pink hover:bg-ashvi-pink/5 rounded-lg transition-colors"
                         >
                             Baby Fits
+                        </RouterLink>
+
+                        {/* Mobile Mom & Mini */}
+                        <RouterLink
+                            to="/mom-mini"
+                            onClick={() => setIsOpen(false)}
+                            className="block w-full text-left px-3 py-3 text-base font-medium text-gray-800 hover:text-ashvi-pink hover:bg-ashvi-pink/5 rounded-lg transition-colors"
+                        >
+                            Mom & Mini
                         </RouterLink>
 
                         {user ? (

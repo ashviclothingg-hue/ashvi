@@ -12,9 +12,12 @@ import AdminPage from './pages/AdminPage';
 import BabiesPage from './pages/BabiesPage';
 import CollectionPage from './pages/CollectionPage';
 import BabyFitsPage from './pages/BabyFitsPage';
+import MomMiniPage from './pages/MomMiniPage';
 import TermsAndConditions from './pages/TermsAndConditions';
 
 import ProductDetailsPage from './pages/ProductDetailsPage';
+import WhatsAppButton from './components/WhatsAppButton';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -36,6 +39,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -45,9 +49,11 @@ function App() {
         <Route path="/babies/:subCategory" element={<BabiesPage />} />
         <Route path="/baby-fits" element={<BabyFitsPage />} />
         <Route path="/collection" element={<CollectionPage />} />
+        <Route path="/mom-mini" element={<MomMiniPage />} />
         <Route path="/product/:productId" element={<ProductDetailsPage />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       </Routes>
+      <WhatsAppButton />
     </Router>
   );
 }

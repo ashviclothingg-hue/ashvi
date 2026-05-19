@@ -124,7 +124,7 @@ const TermsAndConditions = () => {
                             <p className="mb-4">For any queries or complaints, contact us at:</p>
                             <ul className="space-y-2 font-medium">
                                 <li className="flex items-center gap-2">
-                                    <span>📧</span> Email: <a href="mailto:ashvi.co.official@gmail.com" className="text-ashvi-pink hover:underline">ashvi.co.official@gmail.com</a>
+                                    <span>📧</span> Email: <a href="mailto:ashvi.clothingg@gmail.com" className="text-ashvi-pink hover:underline">ashvi.clothingg@gmail.com</a>
                                 </li>
                                 <li className="flex items-center gap-2">
                                     <span>📞</span> WhatsApp: <a href="https://wa.me/917803024406" target="_blank" rel="noopener noreferrer" className="text-ashvi-pink hover:underline">7803024406</a>
